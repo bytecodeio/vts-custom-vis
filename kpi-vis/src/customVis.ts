@@ -1,7 +1,11 @@
+import "./style.css";
 import { Looker } from "./types";
 
 // Global values provided via the API
 declare var looker: Looker;
+
+const kpiLabel = "Size";
+const kpiValue = "23.2 sf";
 
 looker.plugins.visualizations.add({
   // The create method gets called once on initial load of the visualization.
@@ -12,9 +16,19 @@ looker.plugins.visualizations.add({
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
     element.innerHTML = "";
-    const div = document.createElement("div");
-    div.innerText = "Custom vis!";
-    element.appendChild(div);
+
+    // KPI Label Element
+    const kpiLabelElement = document.createElement("div");
+    kpiLabelElement.innerText = kpiLabel;
+    kpiLabelElement.id = "kpi-label";
+    element.appendChild(kpiLabelElement);
+
+    // KPI Value Element
+    const kpiValueElement = document.createElement("div");
+    kpiValueElement.innerText = kpiValue;
+    kpiValueElement.id = "kpi-value";
+    element.appendChild(kpiValueElement);
+
     done();
   },
 });
