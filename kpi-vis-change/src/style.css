@@ -1,0 +1,54 @@
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("./fonts/IBM_Plex_Sans/IBMPlexSans-Regular.ttf");
+}
+
+@font-face {
+  font-family: "Proxima Nova";
+  src: url("./fonts/Proxima_Nova/Fontspring-DEMO-proximanova-semibold.otf");
+}
+#vis-wrapper {
+  display: flex;
+  justify-content: space-between;
+  font-family: "IBM Plex Sans";
+}
+
+#kpi-label {
+  font-size: 14px;
+  font-weight: 400;
+  color: #72777e;
+  line-height: 20px;
+}
+
+#kpi-value {
+  font-family: "Proxima Nova";
+  font-weight: 700;
+  font-size: 18px;
+  color: #1d1e20;
+  line-height: 28px;
+}
+
+#kpi-change-wrapper {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+}
+
+#change-value-wrapper {
+  font-size: 10px;
+  line-height: 14px;
+  display: flex;
+  background: #eef8e8;
+  border-radius: 4px;
+  padding: 1px 2px;
+}
+
+#change-value {
+  color: #39800b;
+  margin-left: 3px;
+}
+
+#change-label {
+  font-size: 10px;
+  margin-left: 6px;
+}

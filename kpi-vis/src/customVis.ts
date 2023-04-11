@@ -1,11 +1,12 @@
 import "./style.css";
 import { Looker } from "./types";
+import { createRoot } from "react-dom/client";
 
 // Global values provided via the API
 declare var looker: Looker;
 
 const kpiLabel = "Size";
-const kpiValue = "23.2 sf";
+const kpiValue = "23.2m sf";
 
 looker.plugins.visualizations.add({
   // The create method gets called once on initial load of the visualization.
@@ -29,6 +30,15 @@ looker.plugins.visualizations.add({
     kpiValueElement.id = "kpi-value";
     element.appendChild(kpiValueElement);
 
+    // Percent change element
+    const percentChangeElement = (document.createElement("div").id =
+      "percent-change");
+
+    const percentChangeMetric = (document.createElement("div").className =
+      "metric");
+
+    const percentChangeLabel = (document.createElement("span").className =
+      "label");
     done();
   },
 });
