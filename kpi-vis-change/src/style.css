@@ -9,7 +9,6 @@
 }
 #vis-wrapper {
   display: flex;
-  justify-content: space-between;
   font-family: "IBM Plex Sans";
 }
 
@@ -51,4 +50,19 @@
 #change-label {
   font-size: 10px;
   margin-left: 6px;
+}
+
+#gauge-chart-wrapper {
+  height: 70px;
+  margin-left: 30px;
+  position: relative;
+}
+
+#gauge-value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: #72777e;
 }

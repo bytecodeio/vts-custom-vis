@@ -2,6 +2,17 @@ import "./style.css";
 import { Looker } from "./types";
 import { createRoot } from "react-dom/client";
 import React from "react";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  ChartOptions,
+  ChartData,
+} from "chart.js";
+import { Doughnut } from "react-chartjs-2";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Global values provided via the API
 declare var looker: Looker;
@@ -21,6 +32,29 @@ const UpArrowSVG = () => (
   </svg>
 );
 
+const percent = 76;
+
+const gaugeData: ChartData<"doughnut", number[], unknown> = {
+  datasets: [
+    {
+      data: [percent, 100 - percent],
+      backgroundColor: ["#4837B9", "#EBEBFF"],
+    },
+  ],
+};
+
+const gaugeChartOptions: ChartOptions<"doughnut"> = {
+  cutout: "75%",
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      enabled: false,
+    },
+  },
+};
+
 function KpiVis(): JSX.Element {
   return (
     <div id="vis-wrapper">
@@ -36,7 +70,10 @@ function KpiVis(): JSX.Element {
         </div>
       </div>
       <div id="right-side">
-        <div>ChartJS</div>
+        <div id="gauge-chart-wrapper">
+          <Doughnut data={gaugeData} options={gaugeChartOptions} />
+          <span id="gauge-value">76%</span>
+        </div>
       </div>
     </div>
   );
