@@ -10,6 +10,7 @@
 #vis-wrapper {
   display: flex;
   font-family: "IBM Plex Sans";
+  justify-content: space-between;
 }
 
 #kpi-label {

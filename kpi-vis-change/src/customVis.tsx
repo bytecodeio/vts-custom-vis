@@ -55,25 +55,37 @@ const gaugeChartOptions: ChartOptions<"doughnut"> = {
   },
 };
 
-function KpiVis(): JSX.Element {
+interface KpiVisProps {
+  isPeriodComparisonVisible: boolean;
+  isGaugeVisible: boolean;
+}
+
+function KpiVis({
+  isPeriodComparisonVisible,
+  isGaugeVisible,
+}: KpiVisProps): JSX.Element {
   return (
     <div id="vis-wrapper">
       <div id="left-side">
         <div id="kpi-label">{kpiLabel}</div>
         <div id="kpi-value">{kpiValue}</div>
-        <div id="kpi-change-wrapper">
-          <div id="change-value-wrapper">
-            <UpArrowSVG />
-            <span id="change-value">12%</span>
+        {isPeriodComparisonVisible && (
+          <div id="kpi-change-wrapper">
+            <div id="change-value-wrapper">
+              <UpArrowSVG />
+              <span id="change-value">12%</span>
+            </div>
+            <span id="change-label">vs previous period</span>
           </div>
-          <span id="change-label">vs previous period</span>
-        </div>
+        )}
       </div>
       <div id="right-side">
-        <div id="gauge-chart-wrapper">
-          <Doughnut data={gaugeData} options={gaugeChartOptions} />
-          <span id="gauge-value">76%</span>
-        </div>
+        {isGaugeVisible && (
+          <div id="gauge-chart-wrapper">
+            <Doughnut data={gaugeData} options={gaugeChartOptions} />
+            <span id="gauge-value">76%</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -87,10 +99,35 @@ looker.plugins.visualizations.add({
   // The updateAsync method gets called any time the visualization rerenders due to any kind of change,
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
-    element.innerHTML = '<div id="app"></div>';
+    // get config options
+    const options = {
+      isPeriodComparisonVisible: {
+        label: "Show Period Comparison",
+        default: true,
+        type: "boolean",
+      },
+      isGaugeVisible: {
+        label: "Show Gauge",
+        default: true,
+        type: "boolean",
+      },
+    };
 
+    this.trigger("registerOptions", options);
+
+    let { isPeriodComparisonVisible, isGaugeVisible } = config;
+    isPeriodComparisonVisible = isPeriodComparisonVisible ?? true;
+    isGaugeVisible = isGaugeVisible ?? true;
+
+    // create react root
+    element.innerHTML = '<div id="app"></div>';
     const root = createRoot(document.getElementById("app"));
-    root.render(<KpiVis />);
+    root.render(
+      <KpiVis
+        isPeriodComparisonVisible={isPeriodComparisonVisible}
+        isGaugeVisible={isGaugeVisible}
+      />
+    );
 
     done();
   },
