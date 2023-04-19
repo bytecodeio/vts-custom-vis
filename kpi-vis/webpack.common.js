@@ -1,7 +1,7 @@
 const path = require("path");
 
 module.exports = {
-  entry: "./src/customVis.ts",
+  entry: "./src/customVis.tsx",
   module: {
     rules: [
       {

@@ -7,12 +7,16 @@
   font-family: "Proxima Nova";
   src: url("./fonts/Proxima_Nova/Fontspring-DEMO-proximanova-semibold.otf");
 }
+#vis-wrapper {
+  display: flex;
+  font-family: "IBM Plex Sans";
+  justify-content: space-between;
+}
 
 #kpi-label {
   font-size: 14px;
   font-weight: 400;
   color: #72777e;
-  font-family: "IBM Plex Sans";
   line-height: 20px;
 }
 
@@ -22,4 +26,44 @@
   font-size: 18px;
   color: #1d1e20;
   line-height: 28px;
+}
+
+#kpi-change-wrapper {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+}
+
+#change-value-wrapper {
+  font-size: 10px;
+  line-height: 14px;
+  display: flex;
+  background: #eef8e8;
+  border-radius: 4px;
+  padding: 1px 2px;
+}
+
+#change-value {
+  color: #39800b;
+  margin-left: 3px;
+}
+
+#change-label {
+  font-size: 10px;
+  margin-left: 6px;
+}
+
+#gauge-chart-wrapper {
+  height: 70px;
+  margin-left: 30px;
+  position: relative;
+}
+
+#gauge-value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: #72777e;
 }
