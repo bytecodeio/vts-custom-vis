@@ -17,8 +17,8 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 // Global values provided via the API
 declare var looker: Looker;
 
-const kpiLabel = "Occupancy";
-const kpiValue = "16.2m sf";
+// const kpiLabel = "Occupancy";
+const kpiValue = "16.2m";
 
 const UpArrowSVG = () => (
   <svg
@@ -58,24 +58,33 @@ const gaugeChartOptions: ChartOptions<"doughnut"> = {
 interface KpiVisProps {
   isPeriodComparisonVisible: boolean;
   isGaugeVisible: boolean;
+  kpiLabel: string;
+  kpiValueUnit: string;
+  comparisonLabel: string;
 }
 
 function KpiVis({
   isPeriodComparisonVisible,
   isGaugeVisible,
+  kpiLabel,
+  kpiValueUnit,
+  comparisonLabel,
 }: KpiVisProps): JSX.Element {
   return (
     <div id="vis-wrapper">
       <div id="left-side">
         <div id="kpi-label">{kpiLabel}</div>
-        <div id="kpi-value">{kpiValue}</div>
+        <div id="kpi-value">
+          {kpiValue}&nbsp;
+          {kpiValueUnit}
+        </div>
         {isPeriodComparisonVisible && (
           <div id="kpi-change-wrapper">
             <div id="change-value-wrapper">
               <UpArrowSVG />
               <span id="change-value">12%</span>
             </div>
-            <span id="change-label">vs previous period</span>
+            <span id="change-label">{comparisonLabel}</span>
           </div>
         )}
       </div>
@@ -111,13 +120,37 @@ looker.plugins.visualizations.add({
         default: true,
         type: "boolean",
       },
+      kpiLabel: {
+        label: "KPI Label",
+        default: "Occupancy",
+        type: "string",
+      },
+      kpiValueUnit: {
+        label: "KPI Value Unit",
+        default: "sf",
+        type: "string",
+      },
+      comparisonLabel: {
+        label: "KPI Label",
+        default: "vs previous period",
+        type: "string",
+      },
     };
 
     this.trigger("registerOptions", options);
 
-    let { isPeriodComparisonVisible, isGaugeVisible } = config;
+    let {
+      isPeriodComparisonVisible,
+      isGaugeVisible,
+      kpiLabel,
+      kpiValueUnit,
+      comparisonLabel,
+    } = config;
     isPeriodComparisonVisible = isPeriodComparisonVisible ?? true;
     isGaugeVisible = isGaugeVisible ?? true;
+    kpiLabel = kpiLabel ?? "Occupancy";
+    kpiValueUnit = kpiValueUnit ?? "sf";
+    comparisonLabel = comparisonLabel ?? "vs previous period";
 
     // create react root
     element.innerHTML = '<div id="app"></div>';
@@ -126,6 +159,9 @@ looker.plugins.visualizations.add({
       <KpiVis
         isPeriodComparisonVisible={isPeriodComparisonVisible}
         isGaugeVisible={isGaugeVisible}
+        kpiLabel={kpiLabel}
+        kpiValueUnit={kpiValueUnit}
+        comparisonLabel={comparisonLabel}
       />
     );
 
