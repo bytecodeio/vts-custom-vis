@@ -58,23 +58,25 @@ const data = {
       backgroundColor: "#6CBFEF",
       borderWidth: 2,
       fill: true,
-      data: labels.map(() => faker.datatype.number({ min: 4, max: 25 })),
+      data: labels.map(() => faker.datatype.number({ min: 500, max: 1000 })),
+      yAxisID: "yRight",
     },
     {
       type: "bar" as const,
       label: "Leased sf",
       backgroundColor: "#4837B9",
       data: labels.map(() => faker.datatype.number({ min: 4, max: 25 })),
+      yAxisID: "yLeft",
     },
     {
       type: "bar" as const,
       label: "Vacant sf",
       backgroundColor: "#D0D9E1",
       data: labels.map(() => faker.datatype.number({ min: 4, max: 25 })),
+      yAxisID: "yLeft",
     },
   ],
 };
-console.log("🚀 ~ file: customVis.tsx:39 ~ data:", data);
 
 const chartOptions = {
   responsive: true,
@@ -82,8 +84,14 @@ const chartOptions = {
     x: {
       stacked: true,
     },
-    y: {
+    yLeft: {
+      type: "linear" as const,
+      position: "left" as const,
       stacked: true,
+    },
+    yRight: {
+      type: "linear" as const,
+      position: "right" as const,
     },
   },
 };
