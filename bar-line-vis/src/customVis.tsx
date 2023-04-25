@@ -79,7 +79,16 @@ const data = {
 };
 
 const chartOptions = {
-  responsive: true,
+  layout: {
+    padding: {
+      top: 5,
+    },
+  },
+  plugins: {
+    legend: {
+      align: "start" as const,
+    },
+  },
   scales: {
     x: {
       stacked: true,
@@ -96,6 +105,23 @@ const chartOptions = {
   },
 };
 
+const chartPlugins = [
+  {
+    id: "padding-below-legend",
+    beforeInit(chart: any) {
+      // Get a reference to the original fit function
+      const originalFit = chart.legend.fit;
+
+      // Override the fit function
+      chart.legend.fit = function fit() {
+        // Call the original function and bind scope in order to use `this` correctly inside it
+        originalFit.bind(chart.legend)();
+        this.height += 10;
+      };
+    },
+  },
+];
+
 function BarLineVis({}: BarLineVisProps): JSX.Element {
   return (
     <div id="vis-wrapper">
@@ -104,7 +130,13 @@ function BarLineVis({}: BarLineVisProps): JSX.Element {
         <div id="controls"></div>
       </div>
       <div id="chart-wrapper">
-        <Chart type="bar" data={data} options={chartOptions} id="chart" />
+        <Chart
+          type="bar"
+          data={data}
+          options={chartOptions}
+          id="chart"
+          plugins={chartPlugins}
+        />
       </div>
     </div>
   );
