@@ -12,6 +12,11 @@
   height: 100%;
 }
 
+#header {
+  display: flex;
+  justify-content: space-between;
+}
+
 #vis-wrapper {
   height: 100%;
   display: flex;

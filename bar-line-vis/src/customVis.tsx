@@ -16,6 +16,9 @@ import {
   BarController,
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
+import Dropdown from "react-bootstrap/Dropdown";
+import DropdownButton from "react-bootstrap/DropdownButton";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 ChartJS.register(
   LinearScale,
@@ -127,7 +130,17 @@ function BarLineVis({}: BarLineVisProps): JSX.Element {
     <div id="vis-wrapper">
       <div id="header">
         <div id="title">Portfolio Performance</div>
-        <div id="controls"></div>
+        <div id="controls">
+          <DropdownButton
+            id="dropdown-basic-button"
+            size="sm"
+            title="Dropdown button"
+          >
+            <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
+            <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
+            <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
+          </DropdownButton>
+        </div>
       </div>
       <div id="chart-wrapper">
         <Chart

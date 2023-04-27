@@ -5,7 +5,7 @@ const path = require("path");
 module.exports = merge(common, {
   mode: "production",
   output: {
-    filename: "kpi-period-comparison-gauge-bundle.js",
+    filename: "kpi-bundle.js",
     path: path.resolve(__dirname, "dist"),
   },
 });
