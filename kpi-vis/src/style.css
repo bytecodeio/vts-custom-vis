@@ -34,7 +34,7 @@
   width: fit-content;
 }
 
-#change-value-wrapper {
+.change-value-wrapper {
   font-size: 10px;
   line-height: 14px;
   display: flex;
@@ -43,9 +43,24 @@
   padding: 1px 2px;
 }
 
-#change-value {
-  color: #39800b;
+.positive-background {
+  background: #eef8e8;
+}
+
+.negative-background {
+  background: #fbe7e5;
+}
+
+.change-value {
   margin-left: 3px;
+}
+
+.positive-text {
+  color: #39800b;
+}
+
+.negative-text {
+  color: #c7200a;
 }
 
 #change-label {
