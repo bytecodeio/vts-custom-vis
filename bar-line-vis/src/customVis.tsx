@@ -95,6 +95,9 @@ const chartOptions = {
   scales: {
     x: {
       stacked: true,
+      grid: {
+        display: false,
+      },
     },
     yLeft: {
       type: "linear" as const,
