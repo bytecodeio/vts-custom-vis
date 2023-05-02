@@ -2,7 +2,7 @@ import "./style.css";
 import { Looker, VisData, VisQueryResponse } from "./types";
 import { createRoot } from "react-dom/client";
 import React from "react";
-import { faker } from "@faker-js/faker";
+import { formatNumber } from "./utils";
 import {
   Chart as ChartJS,
   LinearScale,
@@ -45,21 +45,6 @@ interface BarLineVisProps {
   fields: Fields;
 }
 
-// const labels = [
-//   "Jan",
-//   "Feb",
-//   "Mar",
-//   "Apr",
-//   "May",
-//   "Jun",
-//   "Jul",
-//   "Aug",
-//   "Sep",
-//   "Oct",
-//   "Nov",
-//   "Dec",
-// ];
-
 const chartOptions = {
   layout: {
     padding: {
@@ -82,6 +67,11 @@ const chartOptions = {
       type: "linear" as const,
       position: "left" as const,
       stacked: true,
+      ticks: {
+        callback: function (value: number) {
+          return formatNumber(value);
+        },
+      },
     },
     // yRight: {
     //   type: "linear" as const,
