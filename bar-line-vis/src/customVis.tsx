@@ -1,5 +1,5 @@
 import "./style.css";
-import { Looker } from "./types";
+import { Looker, VisData, VisQueryResponse } from "./types";
 import { createRoot } from "react-dom/client";
 import React from "react";
 import { faker } from "@faker-js/faker";
@@ -35,51 +35,30 @@ ChartJS.register(
 // Global values provided via the API
 declare var looker: Looker;
 
-interface BarLineVisProps {}
+interface Fields {
+  dimensions: string[];
+  measures: string[];
+}
 
-const labels = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-const data = {
-  labels,
-  datasets: [
-    {
-      type: "line" as const,
-      label: "Revenue",
-      borderColor: "#6CBFEF",
-      backgroundColor: "#6CBFEF",
-      borderWidth: 2,
-      fill: true,
-      data: labels.map(() => faker.datatype.number({ min: 500, max: 1000 })),
-      yAxisID: "yRight",
-    },
-    {
-      type: "bar" as const,
-      label: "Leased sf",
-      backgroundColor: "#4837B9",
-      data: labels.map(() => faker.datatype.number({ min: 4, max: 25 })),
-      yAxisID: "yLeft",
-    },
-    {
-      type: "bar" as const,
-      label: "Vacant sf",
-      backgroundColor: "#D0D9E1",
-      data: labels.map(() => faker.datatype.number({ min: 4, max: 25 })),
-      yAxisID: "yLeft",
-    },
-  ],
-};
+interface BarLineVisProps {
+  data: VisData;
+  fields: Fields;
+}
+
+// const labels = [
+//   "Jan",
+//   "Feb",
+//   "Mar",
+//   "Apr",
+//   "May",
+//   "Jun",
+//   "Jul",
+//   "Aug",
+//   "Sep",
+//   "Oct",
+//   "Nov",
+//   "Dec",
+// ];
 
 const chartOptions = {
   layout: {
@@ -104,10 +83,10 @@ const chartOptions = {
       position: "left" as const,
       stacked: true,
     },
-    yRight: {
-      type: "linear" as const,
-      position: "right" as const,
-    },
+    // yRight: {
+    //   type: "linear" as const,
+    //   position: "right" as const,
+    // },
   },
 };
 
@@ -128,7 +107,44 @@ const chartPlugins = [
   },
 ];
 
-function BarLineVis({}: BarLineVisProps): JSX.Element {
+function BarLineVis({ data, fields }: BarLineVisProps): JSX.Element {
+  console.log("🚀 ~ file: customVis.tsx:111 ~ BarLineVis ~ data:", data);
+  // map Looker query data to ChartJS data format
+  const { dimensions, measures } = fields;
+  const labels = data.map((row) => row[dimensions[0]].value);
+  const lowerBarData = data.map((row) => row[measures[0]].value);
+  const upperBarData = data.map((row) => row[measures[1]].value);
+
+  const chartData = {
+    labels,
+    datasets: [
+      // {
+      //   type: "line" as const,
+      //   label: "Revenue",
+      //   borderColor: "#6CBFEF",
+      //   backgroundColor: "#6CBFEF",
+      //   borderWidth: 2,
+      //   fill: true,
+      //   data: labels.map(() => faker.datatype.number({ min: 500, max: 1000 })),
+      //   yAxisID: "yRight",
+      // },
+      {
+        type: "bar" as const,
+        label: "Leased sf",
+        backgroundColor: "#4837B9",
+        data: lowerBarData,
+        yAxisID: "yLeft",
+      },
+      {
+        type: "bar" as const,
+        label: "Vacant sf",
+        backgroundColor: "#D0D9E1",
+        data: upperBarData,
+        yAxisID: "yLeft",
+      },
+    ],
+  };
+
   return (
     <div id="vis-wrapper">
       <div id="header">
@@ -148,7 +164,7 @@ function BarLineVis({}: BarLineVisProps): JSX.Element {
       <div id="chart-wrapper">
         <Chart
           type="bar"
-          data={data}
+          data={chartData}
           options={chartOptions}
           id="chart"
           plugins={chartPlugins}
@@ -166,10 +182,17 @@ looker.plugins.visualizations.add({
   // The updateAsync method gets called any time the visualization rerenders due to any kind of change,
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
+    // get dimensions and measures
+    const { dimension_like, measure_like } = queryResponse.fields;
+    const fields: Fields = {
+      dimensions: dimension_like.map((d) => d.name),
+      measures: measure_like.map((m) => m.name),
+    };
+
     // create react root
     element.innerHTML = '<div id="app"></div>';
     const root = createRoot(document.getElementById("app"));
-    root.render(<BarLineVis />);
+    root.render(<BarLineVis data={data} fields={fields} />);
 
     done();
   },
