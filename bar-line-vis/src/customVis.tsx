@@ -1,5 +1,5 @@
 import "./style.css";
-import { Looker, VisData, VisQueryResponse } from "./types";
+import { Looker, VisConfig, VisData, VisQueryResponse } from "./types";
 import { createRoot } from "react-dom/client";
 import React from "react";
 import { formatNumber } from "./utils";
@@ -16,9 +16,6 @@ import {
   BarController,
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
-import Dropdown from "react-bootstrap/Dropdown";
-import DropdownButton from "react-bootstrap/DropdownButton";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 ChartJS.register(
   LinearScale,
@@ -43,38 +40,8 @@ interface Fields {
 interface BarLineVisProps {
   data: VisData;
   fields: Fields;
+  config: VisConfig;
 }
-
-const chartOptions = {
-  layout: {
-    padding: {
-      top: 5,
-    },
-  },
-  plugins: {
-    legend: {
-      align: "start" as const,
-    },
-  },
-  scales: {
-    x: {
-      stacked: true,
-      grid: {
-        display: false,
-      },
-    },
-    yLeft: {
-      type: "linear" as const,
-      position: "left" as const,
-      stacked: true,
-      ticks: {
-        callback: function (value: number) {
-          return formatNumber(value);
-        },
-      },
-    },
-  },
-};
 
 const chartPlugins = [
   {
@@ -93,14 +60,17 @@ const chartPlugins = [
   },
 ];
 
-function BarLineVis({ data, fields }: BarLineVisProps): JSX.Element {
-  console.log("🚀 ~ file: customVis.tsx:111 ~ BarLineVis ~ data:", data);
+function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   // map Looker query data to ChartJS data format
   const { dimensions, measures } = fields;
   const labels = data.map((row) => row[dimensions[0]].value);
   const lowerBarData = data.map((row) => row[measures[0]].value);
   const upperBarData = data.map((row) => row[measures[1]].value);
 
+  // config values
+  const { showXGridLines, showYGridLines } = config;
+
+  // chart data
   const chartData = {
     labels,
     datasets: [
@@ -119,6 +89,41 @@ function BarLineVis({ data, fields }: BarLineVisProps): JSX.Element {
         yAxisID: "yLeft",
       },
     ],
+  };
+
+  // chart options
+  const chartOptions = {
+    layout: {
+      padding: {
+        top: 5,
+      },
+    },
+    plugins: {
+      legend: {
+        align: "start" as const,
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: showXGridLines,
+        },
+        stacked: true,
+      },
+      yLeft: {
+        grid: {
+          display: showYGridLines,
+        },
+        position: "left" as const,
+        stacked: true,
+        ticks: {
+          callback: function (value: number) {
+            return formatNumber(value);
+          },
+          type: "linear" as const,
+        },
+      },
+    },
   };
 
   return (
@@ -148,6 +153,32 @@ looker.plugins.visualizations.add({
   // The updateAsync method gets called any time the visualization rerenders due to any kind of change,
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
+    // config
+    const configOptions = {
+      showXGridLines: {
+        type: "boolean",
+        label: "Show X Grid Lines",
+        default: true,
+      },
+      showYGridLines: {
+        type: "boolean",
+        label: "Show Y Grid Lines",
+        default: false,
+      },
+    };
+
+    this.trigger("registerOptions", configOptions);
+
+    // assign defaults to config values, which first render as undefined until configOptions is registered
+    const validatedConfig = { ...config };
+    const configKeys = Object.keys(validatedConfig);
+    for (let i = 0; i < configKeys.length; i++) {
+      if (validatedConfig[configKeys[i]] === undefined) {
+        const configKey = configKeys[i] as keyof typeof configOptions;
+        validatedConfig[configKey] = configOptions[configKey].default;
+      }
+    }
+
     // get dimensions and measures
     const { dimension_like, measure_like } = queryResponse.fields;
     const fields: Fields = {
@@ -158,7 +189,9 @@ looker.plugins.visualizations.add({
     // create react root
     element.innerHTML = '<div id="app"></div>';
     const root = createRoot(document.getElementById("app"));
-    root.render(<BarLineVis data={data} fields={fields} />);
+    root.render(
+      <BarLineVis data={data} fields={fields} config={validatedConfig} />
+    );
 
     done();
   },
