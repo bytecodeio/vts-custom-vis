@@ -68,7 +68,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   const upperBarData = data.map((row) => row[measures[1]].value);
 
   // config values
-  const { showXGridLines, showYGridLines } = config;
+  const { showXGridLines, showYGridLines, title } = config;
 
   // chart data
   const chartData = {
@@ -129,7 +129,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   return (
     <div id="vis-wrapper">
       <div id="header">
-        <div id="title">Portfolio Performance</div>
+        <div id="title">{title}</div>
         <div id="controls"></div>
       </div>
       <div id="chart-wrapper">
@@ -155,6 +155,13 @@ looker.plugins.visualizations.add({
   updateAsync: function (data, element, config, queryResponse, details, done) {
     // config
     const configOptions = {
+      title: {
+        type: "string",
+        display: "text",
+        default: "Title",
+        label: "Title",
+        placeholder: "Title",
+      },
       showXGridLines: {
         type: "boolean",
         label: "Show X Grid Lines",
