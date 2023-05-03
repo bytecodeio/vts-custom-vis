@@ -73,10 +73,6 @@ const chartOptions = {
         },
       },
     },
-    // yRight: {
-    //   type: "linear" as const,
-    //   position: "right" as const,
-    // },
   },
 };
 
@@ -108,16 +104,6 @@ function BarLineVis({ data, fields }: BarLineVisProps): JSX.Element {
   const chartData = {
     labels,
     datasets: [
-      // {
-      //   type: "line" as const,
-      //   label: "Revenue",
-      //   borderColor: "#6CBFEF",
-      //   backgroundColor: "#6CBFEF",
-      //   borderWidth: 2,
-      //   fill: true,
-      //   data: labels.map(() => faker.datatype.number({ min: 500, max: 1000 })),
-      //   yAxisID: "yRight",
-      // },
       {
         type: "bar" as const,
         label: "Leased sf",
@@ -139,17 +125,7 @@ function BarLineVis({ data, fields }: BarLineVisProps): JSX.Element {
     <div id="vis-wrapper">
       <div id="header">
         <div id="title">Portfolio Performance</div>
-        <div id="controls">
-          {/* <DropdownButton
-            id="dropdown-basic-button"
-            size="sm"
-            title="Dropdown button"
-          >
-            <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-            <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-            <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-          </DropdownButton> */}
-        </div>
+        <div id="controls"></div>
       </div>
       <div id="chart-wrapper">
         <Chart
