@@ -11,4 +11,5 @@ export function formatNumber(n: number) {
       return `${n / divider}${suffix}`;
     }
   }
+  return n.toString();
 }

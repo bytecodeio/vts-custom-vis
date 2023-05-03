@@ -43,6 +43,13 @@ interface BarLineVisProps {
   config: VisConfig;
 }
 
+interface ConfigOptions {
+  [key: string]: {
+    [key: string]: any;
+    default: any;
+  };
+}
+
 const chartPlugins = [
   {
     id: "padding-below-legend",
@@ -68,7 +75,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   const upperBarData = data.map((row) => row[measures[1]].value);
 
   // config values
-  const { showXGridLines, showYGridLines, title } = config;
+  const { isYAxisCurrency, showXGridLines, showYGridLines, title } = config;
 
   // chart data
   const chartData = {
@@ -118,7 +125,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
         stacked: true,
         ticks: {
           callback: function (value: number) {
-            return formatNumber(value);
+            return `${isYAxisCurrency ? "$" : ""}${formatNumber(value)}`;
           },
           type: "linear" as const,
         },
@@ -154,7 +161,7 @@ looker.plugins.visualizations.add({
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
     // config
-    const configOptions = {
+    const configOptions: ConfigOptions = {
       title: {
         type: "string",
         display: "text",
@@ -170,6 +177,11 @@ looker.plugins.visualizations.add({
       showYGridLines: {
         type: "boolean",
         label: "Show Y Grid Lines",
+        default: false,
+      },
+      isYAxisCurrency: {
+        type: "boolean",
+        label: "Format Y Axis as Currency",
         default: false,
       },
     };
