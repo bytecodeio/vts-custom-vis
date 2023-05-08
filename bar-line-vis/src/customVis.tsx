@@ -35,6 +35,7 @@ declare var looker: Looker;
 interface Fields {
   dimensions: string[];
   measures: string[];
+  pivots: string[];
 }
 
 interface BarLineVisProps {
@@ -69,34 +70,39 @@ const chartPlugins = [
 
 function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   // map Looker query data to ChartJS data format
-  const { dimensions, measures } = fields;
-  const labels = data.map((row) => row[dimensions[0]].value);
-  const lowerBarData = data.map((row) => row[measures[0]].value);
-  const upperBarData = data.map((row) => row[measures[1]].value);
+  const { dimensions, measures, pivots } = fields;
+  const labels = data.map((row) => row[dimensions[0]].value ?? "∅");
+
+  const colors = ["#A3D982", "#6CBFEF", "#6253DA", "#E192ED"];
+  let datasets = [];
+  const hasPivot = !!pivots && pivots.length > 0;
+  if (hasPivot) {
+    const pivotValues = Object.keys(data[0][measures[0]]);
+    pivotValues.forEach((pivotValue, i) => {
+      const columnData = data.map((row) => row[measures[0]][pivotValue].value);
+
+      datasets.push({
+        type: "bar" as const,
+        label: pivotValue,
+        backgroundColor: colors[i],
+        data: columnData,
+        yAxisID: "yLeft",
+      });
+    });
+  } else {
+    datasets.push({
+      type: "bar" as const,
+      backgroundColor: colors[0],
+      data: data.map((row) => row[measures[0]].value),
+      yAxisID: "yLeft",
+    });
+  }
 
   // config values
   const { isYAxisCurrency, showXGridLines, showYGridLines, title } = config;
 
   // chart data
-  const chartData = {
-    labels,
-    datasets: [
-      {
-        type: "bar" as const,
-        label: "Leased sf",
-        backgroundColor: "#4837B9",
-        data: lowerBarData,
-        yAxisID: "yLeft",
-      },
-      {
-        type: "bar" as const,
-        label: "Vacant sf",
-        backgroundColor: "#D0D9E1",
-        data: upperBarData,
-        yAxisID: "yLeft",
-      },
-    ],
-  };
+  const chartData = { labels, datasets };
 
   // chart options
   const chartOptions = {
@@ -108,6 +114,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     plugins: {
       legend: {
         align: "start" as const,
+        display: hasPivot,
       },
     },
     scales: {
@@ -199,10 +206,11 @@ looker.plugins.visualizations.add({
     }
 
     // get dimensions and measures
-    const { dimension_like, measure_like } = queryResponse.fields;
+    const { dimension_like, measure_like, pivots } = queryResponse.fields;
     const fields: Fields = {
       dimensions: dimension_like.map((d) => d.name),
       measures: measure_like.map((m) => m.name),
+      pivots: pivots?.map((p) => p.name),
     };
 
     // create react root
