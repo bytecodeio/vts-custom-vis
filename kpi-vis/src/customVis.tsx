@@ -11,96 +11,12 @@ import {
   ChartData,
 } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
+import { UpArrowSVG, DownArrowSVG, SECTIONS } from "./utils";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Global values provided via the API
 declare var looker: Looker;
-
-// const kpiValue = "16.2m";
-const positiveTextColor = "#39800B";
-const negativeTextColor = "#C7200A";
-
-const DownArrowSVG = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill={negativeTextColor}
-    width="14px"
-    height="14px"
-    viewBox="0 0 24 24"
-  >
-    <title />
-    <g id="Complete">
-      <g id="arrow-down-right">
-        <g>
-          <polyline
-            fill="none"
-            data-name="Right"
-            id="Right-2"
-            points="11.6 18.7 18.7 18.7 18.7 11.6"
-            stroke={negativeTextColor}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-          />
-
-          <line
-            fill="none"
-            stroke={negativeTextColor}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            x1="5.3"
-            x2="17.1"
-            y1="5.3"
-            y2="17.1"
-          />
-        </g>
-      </g>
-    </g>
-  </svg>
-);
-
-const UpArrowSVG = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill={positiveTextColor}
-    width="14px"
-    height="14px"
-    viewBox="0 0 24 24"
-  >
-    <title />
-
-    <g id="Complete">
-      <g id="arrow-up-right">
-        <g>
-          <polyline
-            data-name="Right"
-            fill={positiveTextColor}
-            id="Right-2"
-            points="18.7 12.4 18.7 5.3 11.6 5.3"
-            stroke="#39800B"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-          />
-
-          <line
-            fill={positiveTextColor}
-            stroke="#39800B"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            x1="5.3"
-            x2="17.1"
-            y1="18.7"
-            y2="6.9"
-          />
-        </g>
-      </g>
-    </g>
-  </svg>
-);
 
 const gaugeChartOptions: ChartOptions<"doughnut"> = {
   cutout: "75%",
@@ -114,33 +30,37 @@ const gaugeChartOptions: ChartOptions<"doughnut"> = {
   },
 };
 
+interface DataValues {
+  kpiValue: string;
+  comparisonValue: string;
+  comparisonValueRaw: number;
+  gaugeValue: number;
+}
+
 interface KpiVisProps {
+  dataValues: DataValues;
   isPeriodComparisonVisible: boolean;
   isGaugeVisible: boolean;
   kpiLabel: string;
   kpiValueUnit: string;
-  kpiValue: string;
   comparisonLabel: string;
-  periodComparisonValue: string;
-  periodComparisonValueRaw: number;
-  gaugeValue: number;
 }
 
 function KpiVis({
+  dataValues,
   isPeriodComparisonVisible,
   isGaugeVisible,
   kpiLabel,
   kpiValueUnit,
-  kpiValue,
   comparisonLabel,
-  periodComparisonValue,
-  periodComparisonValueRaw,
-  gaugeValue,
 }: KpiVisProps): JSX.Element {
+  const { kpiValue, comparisonValue, comparisonValueRaw, gaugeValue } =
+    dataValues;
+
   const isPeriodComparisonPositive =
-    !!periodComparisonValueRaw && periodComparisonValueRaw > 0;
+    !!comparisonValueRaw && comparisonValueRaw > 0;
   const isPeriodComparisonNegative =
-    !!periodComparisonValueRaw && periodComparisonValueRaw < 0;
+    !!comparisonValueRaw && comparisonValueRaw < 0;
 
   // Gauge data
   const gaugeValueRounded = Math.round(gaugeValue * 100);
@@ -184,7 +104,7 @@ function KpiVis({
                     : ""
                 }`}
               >
-                {periodComparisonValue}
+                {comparisonValue}
               </span>
             </div>
             <span id="change-label">{comparisonLabel}</span>
@@ -212,34 +132,91 @@ looker.plugins.visualizations.add({
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
     // get query fields
-    const { dimensions, measure_like: measureLike } = queryResponse.fields;
+    const { measure_like: measureLike } = queryResponse.fields;
+    interface Measure {
+      label: string;
+      name: string;
+    }
+    const measures: Measure[] = measureLike.map((measure) => ({
+      label: measure.label_short ?? measure.label,
+      name: measure.name,
+    }));
+
+    interface FieldOption {
+      [key: string]: string;
+    }
+    const fieldOptions: FieldOption[] = measures.map((measure) => ({
+      [measure.label]: measure.name,
+    }));
+    const kpiFieldDefault = measures[0].name;
+    const comparisonFieldDefault = measures.length > 1 ? measures[1].name : "";
+    const gaugeFieldDefault = measures.length > 2 ? measures[2].name : "";
 
     // get config options
     const options = {
+      // fields
+      kpiField: {
+        label: "KPI Value",
+        type: "string",
+        display: "select",
+        default: kpiFieldDefault,
+        values: fieldOptions,
+        section: SECTIONS.fields,
+        order: 1,
+      },
+      comparisonField: {
+        label: "Comparison Period Value",
+        type: "string",
+        display: "select",
+        default: comparisonFieldDefault,
+        values: fieldOptions,
+        section: SECTIONS.fields,
+        order: 2,
+      },
+      gaugeField: {
+        label: "Gauge Value",
+        type: "string",
+        display: "select",
+        default: gaugeFieldDefault,
+        values: fieldOptions,
+        section: SECTIONS.fields,
+        order: 3,
+      },
+      // layout
       isPeriodComparisonVisible: {
         label: "Show Period Comparison",
         default: true,
         type: "boolean",
+        section: SECTIONS.layout,
+        order: 1,
       },
       isGaugeVisible: {
         label: "Show Gauge",
         default: true,
         type: "boolean",
+        section: SECTIONS.layout,
+        order: 2,
       },
       kpiLabel: {
         label: "KPI Label",
         default: "Label",
         type: "string",
+        section: SECTIONS.layout,
+        order: 3,
       },
       kpiValueUnit: {
         label: "KPI Value Unit",
         default: "sf",
         type: "string",
+        section: SECTIONS.layout,
+        order: 4,
       },
       comparisonLabel: {
         label: "Comparison Label",
         default: "vs previous period",
         type: "string",
+        section: SECTIONS.layout,
+        order: 5,
       },
     };
 
@@ -251,6 +228,9 @@ looker.plugins.visualizations.add({
       kpiLabel,
       kpiValueUnit,
       comparisonLabel,
+      kpiField,
+      comparisonField,
+      gaugeField,
     } = config;
 
     // defaults
@@ -259,26 +239,34 @@ looker.plugins.visualizations.add({
     kpiLabel = kpiLabel ?? "Label";
     kpiValueUnit = kpiValueUnit ?? "sf";
     comparisonLabel = comparisonLabel ?? "vs previous period";
+    kpiField = kpiField ?? kpiFieldDefault;
+    comparisonField = comparisonField ?? comparisonFieldDefault;
+    gaugeField = gaugeField ?? gaugeFieldDefault;
 
-    // data values
-    const measureNames = measureLike.map((measure) => measure.name);
+    const kpiValue = data[0][kpiField].rendered as string;
 
-    const kpiValue = data[0][measureNames[0]].rendered as string;
-
-    let periodComparisonValue = "";
-    let periodComparisonValueRaw;
-    if (measureNames.length > 1) {
-      const kpiValueRaw = data[0][measureNames[0]].value;
-      const previousPeriodValueRaw = data[0][measureNames[1]].value;
-      periodComparisonValueRaw =
-        ((kpiValueRaw - previousPeriodValueRaw) / previousPeriodValueRaw) * 100;
-      periodComparisonValue = `${Math.round(periodComparisonValueRaw)}%`;
+    let comparisonValue = "";
+    let comparisonValueRaw;
+    if (measures.length > 1) {
+      const kpiValueRaw = data[0][kpiField].value;
+      const comparisonPeriodValueRaw = data[0][comparisonField].value;
+      comparisonValueRaw =
+        ((kpiValueRaw - comparisonPeriodValueRaw) / comparisonPeriodValueRaw) *
+        100;
+      comparisonValue = `${Math.round(comparisonValueRaw)}%`;
     }
 
     let gaugeValue: number | undefined;
-    if (measureNames.length > 2) {
-      gaugeValue = data[0][measureNames[2]].value;
+    if (measures.length > 2) {
+      gaugeValue = data[0][gaugeField].value;
     }
+
+    const dataValues: DataValues = {
+      kpiValue,
+      comparisonValue,
+      comparisonValueRaw,
+      gaugeValue,
+    };
 
     // create react root
     element.innerHTML = '<div id="app"></div>';
@@ -290,10 +278,7 @@ looker.plugins.visualizations.add({
         kpiLabel={kpiLabel}
         kpiValueUnit={kpiValueUnit}
         comparisonLabel={comparisonLabel}
-        kpiValue={kpiValue}
-        periodComparisonValue={periodComparisonValue}
-        periodComparisonValueRaw={periodComparisonValueRaw}
-        gaugeValue={gaugeValue}
+        dataValues={dataValues}
       />
     );
 
