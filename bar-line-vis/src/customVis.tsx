@@ -73,7 +73,21 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   const { dimensions, measures, pivots } = fields;
   const labels = data.map((row) => row[dimensions[0]].value ?? "∅");
 
-  const colors = ["#A3D982", "#6CBFEF", "#6253DA", "#E192ED"];
+  // const colors = ["#6253DA", "#D0D9E1", "#6CBFEF", "#A3D982", "#E192ED"];
+  const colors = [
+    "d9ed92",
+    "b5e48c",
+    "99d98c",
+    "76c893",
+    "52b69a",
+    "34a0a4",
+    "168aad",
+    "1a759f",
+    "1e6091",
+    "184e77",
+    "00296b",
+  ];
+
   let datasets = [];
   const hasPivot = !!pivots && pivots.length > 0;
   if (hasPivot) {
@@ -84,7 +98,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
       datasets.push({
         type: "bar" as const,
         label: pivotValue,
-        backgroundColor: colors[i],
+        backgroundColor: `#${colors[i]}`,
         data: columnData,
         yAxisID: "yLeft",
       });
@@ -92,7 +106,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   } else {
     datasets.push({
       type: "bar" as const,
-      backgroundColor: colors[0],
+      backgroundColor: `#${colors[0]}`,
       data: data.map((row) => row[measures[0]].value),
       yAxisID: "yLeft",
     });
