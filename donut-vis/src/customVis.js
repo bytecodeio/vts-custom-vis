@@ -53,9 +53,18 @@ looker.plugins.visualizations.add({
     titleText: {
       type: "string",
       label: "Title Text",
-      default: "Dead Deals",
+      default: "Dead Stage",
       display: "text",
-      placeholder: "Dead Deals",
+      placeholder: "Dead Stage",
+      section: "Title",
+    },
+
+    subText: {
+      type: "string",
+      label: "Title Text",
+      default: "Dead Stage",
+      display: "text",
+      placeholder: "Dead Stage",
       section: "Title",
     },
     titleFontSize: {
@@ -231,6 +240,11 @@ looker.plugins.visualizations.add({
       height: 100%;
       max-width: 1000px;
     }
+    #subTitle{
+      font-weight: 300;
+      font-size: 15px;
+      margin-top:5px;
+    }
 
     .legend-label {
       width: 200px;
@@ -283,6 +297,7 @@ looker.plugins.visualizations.add({
     const title = $("<div/>")
     .attr("id", "vis-title")
     .text(config.titleText || "My Title");
+
     visContainer.append(title);
 
     // Legend
@@ -343,21 +358,16 @@ looker.plugins.visualizations.add({
       (aggregator, currentValue) => aggregator + currentValue
     );
 
-    // const centerValueString =
-    //   config.formatCenterValueNum !== false
-    //     ? measureTotal.toLocaleString()
-    //     : measureTotal;
-    //
-    // const donutCenterValues = $("<div/>").attr("id", "center-values-container");
-    // const donutCenterValue = $("<div/>")
-    //   .attr("id", "center-value")
-    //   .text(centerValueString);
-    // const donutCenterLabel = $("<div/>")
-    //   .attr("id", "center-label")
-    //   .text(config.centerLabelText || "Total");
-    //
-    // donutCenterValues.append(donutCenterValue).append(donutCenterLabel);
-    // donutContainer.append(donutCenterValues);
+    const centerValueString =
+      config.formatCenterValueNum !== false
+        ? measureTotal.toLocaleString()
+        : measureTotal;
+
+    const subTitle = $("<div/>").attr("id", "subTitle").text(`${centerValueString} Total`)
+
+    $("#vis-title").append(subTitle);
+
+
 
     // container for html canvas
     const canvasContainer = $("<div/>").attr("id", "canvas-container");
@@ -382,6 +392,7 @@ looker.plugins.visualizations.add({
     const chartConfig = {
       type: "doughnut",
       data: chartData,
+
       options: {
         elements: {
             arc: {
