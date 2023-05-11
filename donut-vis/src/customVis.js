@@ -253,11 +253,11 @@ looker.plugins.visualizations.add({
       '#6CBFEF',
       '#E192ED',
       '#FFB200',
-      '#A3D982',
-      '#6253DA',
-      '#6CBFEF',
-      '#E192ED',
-      '#FFB200',
+      '#d4edc5',
+      '#9b91e7',
+      '#bae1f8',
+      '#f8e4fb',
+      '#ffc540',
     ];
     const chartColors = [
       '#A3D982',
@@ -265,11 +265,11 @@ looker.plugins.visualizations.add({
       '#6CBFEF',
       '#E192ED',
       '#FFB200',
-      '#A3D982',
-      '#6253DA',
-      '#6CBFEF',
-      '#E192ED',
-      '#FFB200',
+      '#d4edc5',
+      '#9b91e7',
+      '#bae1f8',
+      '#f8e4fb',
+      '#ffc540',
 
     ]
     // config.donutColors?.slice(0, dimensionValues.length) ||
@@ -383,6 +383,11 @@ looker.plugins.visualizations.add({
       type: "doughnut",
       data: chartData,
       options: {
+        elements: {
+            arc: {
+              borderWidth: 0
+                }
+        },
         animation: {
           animateRotate: false,
         },
