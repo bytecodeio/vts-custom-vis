@@ -1,7 +1,7 @@
 import "./style.css";
 import { Looker, VisConfig, VisData, VisQueryResponse } from "./types";
 import { createRoot } from "react-dom/client";
-import React from "react";
+import React, { useState } from "react";
 import { formatNumber } from "./utils";
 import {
   Chart as ChartJS,
@@ -16,6 +16,9 @@ import {
   BarController,
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Button from "react-bootstrap/Button";
+import ButtonGroup from "react-bootstrap/ButtonGroup";
 
 ChartJS.register(
   LinearScale,
@@ -42,6 +45,7 @@ interface BarLineVisProps {
   data: VisData;
   fields: Fields;
   config: VisConfig;
+  vis: any;
 }
 
 interface ConfigOptions {
@@ -68,7 +72,12 @@ const chartPlugins = [
   },
 ];
 
-function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
+function BarLineVis({
+  data,
+  fields,
+  config,
+  vis,
+}: BarLineVisProps): JSX.Element {
   // map Looker query data to ChartJS data format
   const { dimensions, measures, pivots } = fields;
   const labels = data.map((row) => row[dimensions[0]].value ?? "∅");
@@ -154,11 +163,70 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     },
   };
 
+  // Filters
+  const filterFieldMap = {
+    marketRegion: "properties.market_or_region",
+  };
+
+  const marketRegionFilterOptions = [
+    {
+      label: "Market",
+      value: "market",
+    },
+    {
+      label: "Region",
+      value: "region",
+    },
+  ];
+
+  const defaultFilters = {
+    marketRegion: marketRegionFilterOptions[0].value,
+  };
+
+  const [filters, setFilters] = useState(defaultFilters);
+
+  function handleFilterSelection(
+    filterName: keyof typeof filterFieldMap,
+    value: string,
+    vis: any
+  ) {
+    const fieldName = filterFieldMap[filterName];
+    vis.trigger("filter", [
+      {
+        field: "lease_date_properties.dynamic_date",
+        value: "2022-05",
+        run: true,
+      },
+    ]);
+    // vis.trigger("limit", [5]);
+    // vis.trigger("updateConfig", [{ showYGridLines: true }]);
+    debugger;
+    setFilters((prev) => ({
+      ...prev,
+      marketRegion: value,
+    }));
+  }
+
   return (
     <div id="vis-wrapper">
       <div id="header">
         <div id="title">{title}</div>
-        <div id="controls"></div>
+        <div id="controls">
+          <ButtonGroup size="sm">
+            {marketRegionFilterOptions.map(({ label, value }, i) => (
+              <Button
+                active={filters.marketRegion === value}
+                key={value}
+                onClick={() =>
+                  handleFilterSelection("marketRegion", value, vis)
+                }
+                variant="outline-secondary"
+              >
+                {label}
+              </Button>
+            ))}
+          </ButtonGroup>
+        </div>
       </div>
       <div id="chart-wrapper">
         <Chart
@@ -181,6 +249,25 @@ looker.plugins.visualizations.add({
   // The updateAsync method gets called any time the visualization rerenders due to any kind of change,
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
+    console.log("🚀 ~ file: customVis.tsx:252 ~ config:", config);
+    console.log("🚀 ~ file: customVis.tsx:330 ~ data:", data);
+    element.innerHTML = "";
+    const elem = document.createElement("button");
+    elem.innerText = "button";
+    elem.addEventListener("click", () => {
+      vis.trigger("filter", [
+        {
+          field: "lease_date_properties.dynamic_date",
+          value: "2022-05",
+          run: true,
+        },
+      ]);
+      // debugger;
+    });
+    element.appendChild(elem);
+    console.log("🚀 ~ file: customVis.tsx:240 ~ queryResponse:", queryResponse);
+    const vis = this;
+
     // config
     const configOptions: ConfigOptions = {
       title: {
@@ -207,7 +294,7 @@ looker.plugins.visualizations.add({
       },
     };
 
-    this.trigger("registerOptions", configOptions);
+    vis.trigger("registerOptions", configOptions);
 
     // assign defaults to config values, which first render as undefined until configOptions is registered
     const validatedConfig = { ...config };
@@ -231,7 +318,12 @@ looker.plugins.visualizations.add({
     element.innerHTML = '<div id="app"></div>';
     const root = createRoot(document.getElementById("app"));
     root.render(
-      <BarLineVis data={data} fields={fields} config={validatedConfig} />
+      <BarLineVis
+        data={data}
+        fields={fields}
+        config={validatedConfig}
+        vis={vis}
+      />
     );
 
     done();
