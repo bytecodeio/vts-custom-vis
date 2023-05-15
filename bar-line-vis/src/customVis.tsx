@@ -1,8 +1,18 @@
 import "./style.css";
 import { Looker, VisConfig, VisData, VisQueryResponse } from "./types";
 import { createRoot } from "react-dom/client";
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
+import * as $ from "jquery";
+
 import { formatNumber } from "./utils";
+import { Button, ButtonGroup } from "react-bootstrap";
+
+import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import '../node_modules/bootstrap/dist/js/bootstrap.min.js';
+
+
+
+
 import {
   Chart as ChartJS,
   LinearScale,
@@ -29,6 +39,7 @@ ChartJS.register(
   BarController
 );
 
+
 // Global values provided via the API
 declare var looker: Looker;
 
@@ -45,7 +56,7 @@ interface BarLineVisProps {
 }
 
 interface ConfigOptions {
-  [key: string]: {
+    [key: string]: {
     [key: string]: any;
     default: any;
   };
@@ -68,10 +79,81 @@ const chartPlugins = [
   },
 ];
 
-function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
+  const filterName = [
+    {
+      name:"Count",
+      id:"count"
+
+    },
+    {
+      name:"Area",
+      id:"area"
+    }
+
+]
+//
+// // const filterName = ['Area', 'Count']
+//
+// // interface Filter {
+// //   name:string,
+// //   id:string
+// // }
+// //
+// //
+// // type ButtonsProps = {
+// // filterName: Filter[];
+// // };
+//
+//
+type ButtonsProps = {
+filterName: string[];
+};
+
+
+
+// const filterName = ['Area', 'Count']
+//
+// type ButtonsProps = {
+// filterName: string[];
+// };
+//
+// const buttons:ButtonProps = new ButtonProps(
+// {
+//   filterName:filterName
+// })
+
+
+function Buttons({ filterName }: ButtonsProps): JSX.Element {
+const [clickedId, setClickedId] = useState(-1);
+
+return (
+<ButtonGroup>
+{filterName.map((name, i) => (
+  <Button
+   key={i}
+   onClick={() => setClickedId(i)}
+   className={i === clickedId ? "measureButtonActive" : "measureButton"}
+
+  id={name.id}>{name.name}
+  </Button>
+))}
+</ButtonGroup>
+);
+}
+
+
+
+
+function BarLineVis({
+  data,
+  fields,
+  config
+}: BarLineVisProps): JSX.Element {
   // map Looker query data to ChartJS data format
   const { dimensions, measures, pivots } = fields;
   const labels = data.map((row) => row[dimensions[0]].value ?? "∅");
+
+
 
   // const colors = ["#6253DA", "#D0D9E1", "#6CBFEF", "#A3D982", "#E192ED"];
   const colors = [
@@ -118,6 +200,8 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   // chart data
   const chartData = { labels, datasets };
 
+
+
   // chart options
   const chartOptions = {
     layout: {
@@ -151,13 +235,23 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
           type: "linear" as const,
         },
       },
+
     },
   };
+
+
 
   return (
     <div id="vis-wrapper">
       <div id="header">
         <div id="title">{title}</div>
+        <Buttons
+          className="measureButton"
+          filterName={filterName}
+        />
+
+
+
         <div id="controls"></div>
       </div>
       <div id="chart-wrapper">
@@ -181,7 +275,25 @@ looker.plugins.visualizations.add({
   // The updateAsync method gets called any time the visualization rerenders due to any kind of change,
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
-    // config
+
+    var vis = this;
+     $(element).find("#count").click(function(){
+     	vis.trigger("filter", [{
+     		field: "properties.dynamic_count_or_area", // the name of the field to filter
+     		value: "%Count%", // the "advanced syntax" for the filter
+     		run: true, // whether to re-run the query with the new filter
+     	}]);
+     });
+
+      $(element).find("#area").click(function(){
+      	vis.trigger("filter", [{
+      		field: "properties.dynamic_count_or_area", // the name of the field to filter
+      		value: "%Area%", // the "advanced syntax" for the filter
+      		run: true, // whether to re-run the query with the new filter
+      	}]);
+      });
+
+
     const configOptions: ConfigOptions = {
       title: {
         type: "string",

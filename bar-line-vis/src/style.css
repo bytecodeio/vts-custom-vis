@@ -8,6 +8,8 @@
   src: url("./fonts/Proxima_Nova/Fontspring-DEMO-proximanova-semibold.otf");
 }
 
+
+
 #app {
   height: 100%;
 }
@@ -31,4 +33,19 @@
 
 #chart {
   max-height: 100%;
+}
+
+
+.measureButton{
+  background: #FFFFFF !important;
+  border-color: #D0D9E1 !important;
+  color:#1D1E20 !important;
+  font-size:12px !important
+}
+
+.measureButtonActive{
+  background: #E8EDF3  !important;
+  border-color: #D0D9E1 !important;
+  color:#1D1E20 !important;
+  font-size:12px !important
 }
