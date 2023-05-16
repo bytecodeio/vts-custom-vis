@@ -122,7 +122,16 @@ function BarLineVis({
   }
 
   // config values
-  const { isYAxisCurrency, showXGridLines, showYGridLines, title } = config;
+  const {
+    isYAxisCurrency,
+    showXGridLines,
+    showYGridLines,
+    showXAxisLabel,
+    xAxisText,
+    showYAxisLabel,
+    yAxisText,
+    title,
+  } = config;
 
   // chart data
   const chartData = { labels, datasets };
@@ -146,6 +155,10 @@ function BarLineVis({
           display: showXGridLines,
         },
         stacked: true,
+        title: {
+          display: showXAxisLabel,
+          text: xAxisText,
+        },
       },
       yLeft: {
         grid: {
@@ -158,6 +171,10 @@ function BarLineVis({
             return `${isYAxisCurrency ? "$" : ""}${formatNumber(value)}`;
           },
           type: "linear" as const,
+        },
+        title: {
+          display: showYAxisLabel,
+          text: yAxisText,
         },
       },
     },
@@ -276,21 +293,49 @@ looker.plugins.visualizations.add({
         default: "Title",
         label: "Title",
         placeholder: "Title",
+        order: 1,
+      },
+      showXAxisLabel: {
+        type: "boolean",
+        label: "Show X Axis Label",
+        default: false,
+        order: 2,
+      },
+      xAxisText: {
+        type: "string",
+        label: "X Axis Text",
+        default: "X Axis",
+        order: 3,
+      },
+      showYAxisLabel: {
+        type: "boolean",
+        label: "Show Y Axis Label",
+        default: false,
+        order: 4,
+      },
+      yAxisText: {
+        type: "string",
+        label: "Y Axis Text",
+        default: "Y Axis",
+        order: 5,
       },
       showXGridLines: {
         type: "boolean",
         label: "Show X Grid Lines",
         default: true,
+        order: 6,
       },
       showYGridLines: {
         type: "boolean",
         label: "Show Y Grid Lines",
         default: false,
+        order: 7,
       },
       isYAxisCurrency: {
         type: "boolean",
         label: "Format Y Axis as Currency",
         default: false,
+        order: 8,
       },
     };
 
