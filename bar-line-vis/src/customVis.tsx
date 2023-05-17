@@ -79,6 +79,9 @@ const chartPlugins = [
   },
 ];
 
+
+
+
   const filterName = [
     {
       name:"Count",
@@ -91,47 +94,25 @@ const chartPlugins = [
     }
 
 ]
-//
-// // const filterName = ['Area', 'Count']
-//
-// // interface Filter {
-// //   name:string,
-// //   id:string
-// // }
-// //
-// //
-// // type ButtonsProps = {
-// // filterName: Filter[];
-// // };
-//
-//
+
 type ButtonsProps = {
 filterName: string[];
 };
 
 
 
-// const filterName = ['Area', 'Count']
-//
-// type ButtonsProps = {
-// filterName: string[];
-// };
-//
-// const buttons:ButtonProps = new ButtonProps(
-// {
-//   filterName:filterName
-// })
-
-
 function Buttons({ filterName }: ButtonsProps): JSX.Element {
 const [clickedId, setClickedId] = useState(-1);
+
+
 
 return (
 <ButtonGroup>
 {filterName.map((name, i) => (
   <Button
    key={i}
-   onClick={() => setClickedId(i)}
+   onClick={() =>
+   setClickedId(i)}
    className={i === clickedId ? "measureButtonActive" : "measureButton"}
 
   id={name.id}>{name.name}
@@ -140,6 +121,27 @@ return (
 </ButtonGroup>
 );
 }
+
+
+//
+// var vis = this;
+//  $(element).find("#count").click(function(){
+//
+//   vis.trigger("filter", [{
+//     field: "properties.dynamic_count_or_area", // the name of the field to filter
+//     value: "%Count%", // the "advanced syntax" for the filter
+//     run: true, // whether to re-run the query with the new filter
+//   }]);
+//  });
+//
+//   $(element).find("#area").click(function(){
+//     vis.trigger("filter", [{
+//       field: "properties.dynamic_count_or_area", // the name of the field to filter
+//       value: "%Area%", // the "advanced syntax" for the filter
+//       run: true, // whether to re-run the query with the new filter
+//     }]);
+//   });
+
 
 
 
@@ -276,23 +278,7 @@ looker.plugins.visualizations.add({
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
 
-    var vis = this;
-     $(element).find("#count").click(function(){
-     	vis.trigger("filter", [{
-     		field: "properties.dynamic_count_or_area", // the name of the field to filter
-     		value: "%Count%", // the "advanced syntax" for the filter
-     		run: true, // whether to re-run the query with the new filter
-     	}]);
-     });
-
-      $(element).find("#area").click(function(){
-      	vis.trigger("filter", [{
-      		field: "properties.dynamic_count_or_area", // the name of the field to filter
-      		value: "%Area%", // the "advanced syntax" for the filter
-      		run: true, // whether to re-run the query with the new filter
-      	}]);
-      });
-
+console.log(queryResponse)
 
     const configOptions: ConfigOptions = {
       title: {
