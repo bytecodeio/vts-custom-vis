@@ -14,6 +14,7 @@ import {
   Tooltip,
   LineController,
   BarController,
+  ChartType,
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -45,7 +46,7 @@ interface BarLineVisProps {
   data: VisData;
   fields: Fields;
   config: VisConfig;
-  vis: any;
+  lookerVis: any;
 }
 
 interface ConfigOptions {
@@ -76,8 +77,69 @@ function BarLineVis({
   data,
   fields,
   config,
-  vis,
+  lookerVis,
 }: BarLineVisProps): JSX.Element {
+  // Filters
+  // const filterFieldMap = {
+  //   marketRegion: "properties.market_or_region",
+  // };
+
+  // const marketRegionFilterOptions = [
+  //   {
+  //     label: "Market",
+  //     value: "market",
+  //   },
+  //   {
+  //     label: "Region",
+  //     value: "region",
+  //   },
+  // ];
+
+  // const defaultFilters = {
+  //   marketRegion: marketRegionFilterOptions[0].value,
+  // };
+
+  // const [filters, setFilters] = useState(defaultFilters);
+
+  // function handleFilterSelection(
+  //   filterName: keyof typeof filterFieldMap,
+  //   value: string,
+  //   lookerVis: any
+  // ) {
+  //   const fieldName = filterFieldMap[filterName];
+  //   lookerVis.trigger("filter", [
+  //     {
+  //       field: "lease_date_properties.dynamic_date",
+  //       value: "2022-05",
+  //       run: true,
+  //     },
+  //   ]);
+  //   setFilters((prev) => ({
+  //     ...prev,
+  //     marketRegion: value,
+  //   }));
+  // }
+
+  // Chart type toggle
+  interface ChartTypeOption {
+    label: string;
+    value: ChartType;
+  }
+
+  const chartTypeOptions: ChartTypeOption[] = [
+    {
+      label: "Bar",
+      value: "bar",
+    },
+    {
+      label: "Line",
+      value: "line",
+    },
+  ];
+  const [selectedChartType, setSelectedChartType] = useState(
+    chartTypeOptions[0].value
+  );
+
   // map Looker query data to ChartJS data format
   const { dimensions, measures, pivots } = fields;
   const labels = data.map((row) => row[dimensions[0]].value ?? "∅");
@@ -105,17 +167,19 @@ function BarLineVis({
       const columnData = data.map((row) => row[measures[0]][pivotValue].value);
 
       datasets.push({
-        type: "bar" as const,
+        type: selectedChartType,
         label: pivotValue,
         backgroundColor: `#${colors[i]}`,
+        borderColor: `#${colors[i]}`,
         data: columnData,
         yAxisID: "yLeft",
       });
     });
   } else {
     datasets.push({
-      type: "bar" as const,
+      type: selectedChartType,
       backgroundColor: `#${colors[0]}`,
+      borderColor: `#${colors[0]}`,
       data: data.map((row) => row[measures[0]].value),
       yAxisID: "yLeft",
     });
@@ -154,7 +218,7 @@ function BarLineVis({
         grid: {
           display: showXGridLines,
         },
-        stacked: true,
+        stacked: selectedChartType === "bar",
         title: {
           display: showXAxisLabel,
           text: xAxisText,
@@ -165,7 +229,7 @@ function BarLineVis({
           display: showYGridLines,
         },
         position: "left" as const,
-        stacked: true,
+        stacked: selectedChartType === "bar",
         ticks: {
           callback: function (value: number) {
             return `${isYAxisCurrency ? "$" : ""}${formatNumber(value)}`;
@@ -180,56 +244,24 @@ function BarLineVis({
     },
   };
 
-  // Filters
-  const filterFieldMap = {
-    marketRegion: "properties.market_or_region",
-  };
-
-  const marketRegionFilterOptions = [
-    {
-      label: "Market",
-      value: "market",
-    },
-    {
-      label: "Region",
-      value: "region",
-    },
-  ];
-
-  const defaultFilters = {
-    marketRegion: marketRegionFilterOptions[0].value,
-  };
-
-  const [filters, setFilters] = useState(defaultFilters);
-
-  function handleFilterSelection(
-    filterName: keyof typeof filterFieldMap,
-    value: string,
-    vis: any
-  ) {
-    const fieldName = filterFieldMap[filterName];
-    vis.trigger("filter", [
-      {
-        field: "lease_date_properties.dynamic_date",
-        value: "2022-05",
-        run: true,
-      },
-    ]);
-    // vis.trigger("limit", [5]);
-    // vis.trigger("updateConfig", [{ showYGridLines: true }]);
-    debugger;
-    setFilters((prev) => ({
-      ...prev,
-      marketRegion: value,
-    }));
-  }
-
   return (
     <div id="vis-wrapper">
       <div id="header">
         <div id="title">{title}</div>
         <div id="controls">
           <ButtonGroup size="sm">
+            {chartTypeOptions.map((chartTypeOption) => (
+              <Button
+                active={selectedChartType === chartTypeOption.value}
+                key={chartTypeOption.value}
+                onClick={() => setSelectedChartType(chartTypeOption.value)}
+                variant="outline-secondary"
+              >
+                {chartTypeOption.label}
+              </Button>
+            ))}
+          </ButtonGroup>
+          {/* <ButtonGroup size="sm">
             {marketRegionFilterOptions.map(({ label, value }, i) => (
               <Button
                 active={filters.marketRegion === value}
@@ -242,12 +274,12 @@ function BarLineVis({
                 {label}
               </Button>
             ))}
-          </ButtonGroup>
+          </ButtonGroup> */}
         </div>
       </div>
       <div id="chart-wrapper">
         <Chart
-          type="bar"
+          type={selectedChartType}
           data={chartData}
           options={chartOptions}
           id="chart"
@@ -269,21 +301,7 @@ looker.plugins.visualizations.add({
     console.log("🚀 ~ file: customVis.tsx:252 ~ config:", config);
     console.log("🚀 ~ file: customVis.tsx:330 ~ data:", data);
     element.innerHTML = "";
-    const elem = document.createElement("button");
-    elem.innerText = "button";
-    elem.addEventListener("click", () => {
-      vis.trigger("filter", [
-        {
-          field: "lease_date_properties.dynamic_date",
-          value: "2022-05",
-          run: true,
-        },
-      ]);
-      // debugger;
-    });
-    element.appendChild(elem);
-    console.log("🚀 ~ file: customVis.tsx:240 ~ queryResponse:", queryResponse);
-    const vis = this;
+    const lookerVis = this;
 
     // config
     const configOptions: ConfigOptions = {
@@ -339,7 +357,7 @@ looker.plugins.visualizations.add({
       },
     };
 
-    vis.trigger("registerOptions", configOptions);
+    lookerVis.trigger("registerOptions", configOptions);
 
     // assign defaults to config values, which first render as undefined until configOptions is registered
     const validatedConfig = { ...config };
@@ -367,7 +385,7 @@ looker.plugins.visualizations.add({
         data={data}
         fields={fields}
         config={validatedConfig}
-        vis={vis}
+        lookerVis={lookerVis}
       />
     );
 
