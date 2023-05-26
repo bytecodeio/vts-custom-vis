@@ -9,12 +9,17 @@
   flex-direction: column;
   font-family: 'IBM Plex Sans';
   font-weight:300;
+
 }
 
 
 #vis {
 
     min-height: 500px;
+}
+
+#vis th {
+  display: none !important;
 }
 
 body{
@@ -176,6 +181,11 @@ background: #CCCCFF
   font-size:12px;
 }
 
+
+p.sentiment{
+  font-size:12px;
+}
+
 .progress {
     --bs-progress-height: .5rem !important;
     --bs-progress-font-size: 0.55rem !important;
@@ -184,7 +194,7 @@ background: #CCCCFF
 
     --bs-progress-bar-color: #fff;
     --bs-progress-bar-bg: #887EFC !important;
-    max-width:75% !important;
+    max-width:70% !important;
 }
 
 .progress-label {

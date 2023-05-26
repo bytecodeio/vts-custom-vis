@@ -4,7 +4,7 @@ module.exports = {
   mode: "production",
   entry: "./src/customVis",
   output: {
-    filename: "bundle.js",
+    filename: "custom_table.js",
     path: path.resolve(__dirname, "dist"),
   },
   module: {

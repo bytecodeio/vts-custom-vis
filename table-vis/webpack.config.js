@@ -21,7 +21,8 @@ module.exports = {
         include: /src/,
         sideEffects: false,
       },
-        {test:/\.css$/,use:['style-loader','css-loader']},
+      { test: /\.css$/i, use: ["to-string-loader", "css-loader"] },
+    
     ],
   },
   resolve: {
