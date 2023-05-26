@@ -54,6 +54,7 @@ function KpiVis({
   kpiValueUnit,
   comparisonLabel,
 }: KpiVisProps): JSX.Element {
+  console.log("🚀 ~ file: customVis.tsx:57 ~ dataValues:", dataValues);
   const { kpiValue, comparisonValue, comparisonValueRaw, gaugeValue } =
     dataValues;
 
@@ -131,6 +132,8 @@ looker.plugins.visualizations.add({
   // The updateAsync method gets called any time the visualization rerenders due to any kind of change,
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
+    console.log("🚀 ~ file: customVis.tsx:289 ~ data:", data);
+
     // get query fields
     const { measure_like: measureLike } = queryResponse.fields;
     interface Measure {
@@ -243,7 +246,9 @@ looker.plugins.visualizations.add({
     comparisonField = comparisonField ?? comparisonFieldDefault;
     gaugeField = gaugeField ?? gaugeFieldDefault;
 
-    const kpiValue = data[0][kpiField].rendered as string;
+    const kpiValue =
+      (data[0][kpiField].rendered as string) ??
+      data[0][kpiField].value.toString();
 
     let comparisonValue = "";
     let comparisonValueRaw;
