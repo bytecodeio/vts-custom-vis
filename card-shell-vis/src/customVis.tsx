@@ -46,7 +46,7 @@ interface BarLineVisProps {
   data: VisData;
   fields: Fields;
   config: VisConfig;
-  lookerVis: any;
+  lookerVis?: any;
 }
 
 interface ConfigOptions {
@@ -73,12 +73,7 @@ const chartPlugins = [
   },
 ];
 
-function BarLineVis({
-  data,
-  fields,
-  config,
-  lookerVis,
-}: BarLineVisProps): JSX.Element {
+function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   // Filters
   // const filterFieldMap = {
   //   marketRegion: "properties.market_or_region",
@@ -195,6 +190,8 @@ function BarLineVis({
     showYAxisLabel,
     yAxisText,
     title,
+    showKpi,
+    kpiUnit,
   } = config;
 
   // chart data
@@ -244,10 +241,29 @@ function BarLineVis({
     },
   };
 
+  // KPI value
+  const kpiValue = data.reduce((total, currentRow) => {
+    let newTotal = total;
+    const cellValues = Object.values(currentRow[measures[0]]).map(
+      (cell) => cell.value
+    );
+    for (let i = 0; i < cellValues.length; i++) {
+      newTotal += cellValues[i];
+    }
+    return newTotal;
+  }, 0);
+
   return (
     <div id="vis-wrapper">
       <div id="header">
-        <div id="title">{title}</div>
+        <div id="title-kpi-wrapper">
+          <div id="title">{title}</div>
+          {showKpi && (
+            <div id="kpi">
+              {kpiValue.toLocaleString()} {kpiUnit}
+            </div>
+          )}
+        </div>
         <div id="controls">
           <ButtonGroup size="sm">
             {chartTypeOptions.map((chartTypeOption) => (
@@ -302,6 +318,7 @@ looker.plugins.visualizations.add({
     console.log("🚀 ~ file: customVis.tsx:330 ~ data:", data);
     element.innerHTML = "";
     const lookerVis = this;
+    console.log("queryResponse", queryResponse);
 
     // config
     const configOptions: ConfigOptions = {
@@ -354,6 +371,18 @@ looker.plugins.visualizations.add({
         label: "Format Y Axis as Currency",
         default: false,
         order: 8,
+      },
+      showKpi: {
+        type: "boolean",
+        label: "Show KPI",
+        default: true,
+        order: 9,
+      },
+      kpiUnit: {
+        type: "string",
+        label: "KPI Unit",
+        default: "sq ft",
+        order: 10,
       },
     };
 
