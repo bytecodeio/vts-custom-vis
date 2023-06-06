@@ -137,7 +137,9 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
 
   // map Looker query data to ChartJS data format
   const { dimensions, measures, pivots } = fields;
-  const labels = data.map((row) => row[dimensions[0]].value ?? "∅");
+  const labels = data.map(
+    (row) => row[dimensions[0]].rendered ?? row[dimensions[0]].value ?? "∅"
+  );
 
   // const colors = ["#6253DA", "#D0D9E1", "#6CBFEF", "#A3D982", "#E192ED"];
   const colors = [
