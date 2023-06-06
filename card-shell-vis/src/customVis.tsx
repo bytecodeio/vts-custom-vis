@@ -246,12 +246,17 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   // KPI value
   const kpiValue = data.reduce((total, currentRow) => {
     let newTotal = total;
-    const cellValues = Object.values(currentRow[measures[0]]).map(
-      (cell) => cell.value
-    );
-    for (let i = 0; i < cellValues.length; i++) {
-      newTotal += cellValues[i];
+    if (hasPivot) {
+      const cellValues = Object.values(currentRow[measures[0]]).map(
+        (cell) => cell.value
+      );
+      for (let i = 0; i < cellValues.length; i++) {
+        newTotal += cellValues[i];
+      }
+    } else {
+      newTotal += currentRow[measures[0]].value;
     }
+
     return newTotal;
   }, 0);
 
