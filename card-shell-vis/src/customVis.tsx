@@ -192,12 +192,14 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     title,
     showKpi,
     kpiUnit,
+    isBarChartStacked,
   } = config;
 
   // chart data
   const chartData = { labels, datasets };
 
   // chart options
+  const isStacked = selectedChartType === "bar" && isBarChartStacked;
   const chartOptions = {
     layout: {
       padding: {
@@ -215,7 +217,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
         grid: {
           display: showXGridLines,
         },
-        stacked: selectedChartType === "bar",
+        stacked: isStacked,
         title: {
           display: showXAxisLabel,
           text: xAxisText,
@@ -226,7 +228,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
           display: showYGridLines,
         },
         position: "left" as const,
-        stacked: selectedChartType === "bar",
+        stacked: isStacked,
         ticks: {
           callback: function (value: number) {
             return `${isYAxisCurrency ? "$" : ""}${formatNumber(value)}`;
@@ -383,6 +385,12 @@ looker.plugins.visualizations.add({
         label: "KPI Unit",
         default: "sq ft",
         order: 10,
+      },
+      isBarChartStacked: {
+        type: "boolean",
+        label: "Stacked Bar Chart",
+        default: true,
+        order: 11,
       },
     };
 
