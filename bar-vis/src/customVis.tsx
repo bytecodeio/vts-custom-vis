@@ -1,8 +1,8 @@
 import "./style.css";
-import { Looker, VisConfig, VisData, VisQueryResponse } from "./types";
+import { Looker, VisConfig, VisData } from "./types";
 import { createRoot } from "react-dom/client";
 import React, { useState } from "react";
-import { formatNumber } from "./utils";
+import { externalTooltipHandler, formatNumber } from "./utils";
 import {
   Chart as ChartJS,
   LinearScale,
@@ -16,9 +16,6 @@ import {
   BarController,
   ChartType,
   ChartOptions,
-  TooltipModel,
-  Point,
-  BubbleDataPoint,
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -204,75 +201,6 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   // chart data
   const chartData = { labels, datasets };
 
-  // custom chart tooltip
-  interface TooltipContext {
-    chart: ChartJS<
-      "bar" | "line",
-      (number | Point | [number, number] | BubbleDataPoint)[],
-      unknown
-    >;
-    tooltip: TooltipModel<"bar" | "line">;
-  }
-
-  function externalTooltipHandler(context: TooltipContext) {
-    console.log(
-      "🚀 ~ file: customVis.tsx:205 ~ externalTooltipHandler ~ context:",
-      context
-    );
-
-    // Tooltip Element
-    let tooltipElement = document.getElementById("chartjs-tooltip");
-
-    // Create element on first render
-    if (!tooltipElement) {
-      tooltipElement = document.createElement("div");
-      tooltipElement.id = "chartjs-tooltip";
-      document.body.appendChild(tooltipElement);
-    }
-
-    // Hide if no tooltip
-    const tooltipModel = context.tooltip;
-    if (tooltipModel.opacity === 0) {
-      tooltipElement.style.opacity = "0";
-      return;
-    }
-
-    // Set caret Position
-    tooltipElement.classList.remove("above", "below", "no-transform");
-    if (tooltipModel.yAlign) {
-      tooltipElement.classList.add(tooltipModel.yAlign);
-    } else {
-      tooltipElement.classList.add("no-transform");
-    }
-
-    // Add HTML content to tooltip
-    const position = context.chart.canvas.getBoundingClientRect();
-    function addElementStyles(
-      htmlElement: HTMLElement,
-      styles: Partial<CSSStyleDeclaration>
-    ) {
-      Object.entries(styles).forEach(([property, value]) => {
-        htmlElement.style[property] = value;
-      });
-    }
-
-    tooltipElement.innerText = "Hello World";
-
-    // Tooltip element stypes
-    const tooltipElementStyles: Partial<CSSStyleDeclaration> = {
-      opacity: "1",
-      position: "absolute",
-      left: position.left + window.pageXOffset + tooltipModel.caretX + "px",
-      top: position.top + window.pageYOffset + tooltipModel.caretY + "px",
-      padding: "6px",
-      pointerEvents: "none",
-      backgroundColor: "#1D1E20",
-      color: "#FFFFFF",
-      borderRadius: "4px",
-    };
-    addElementStyles(tooltipElement, tooltipElementStyles);
-  }
-
   // chart options
   const isStacked = selectedChartType === "bar" && isBarChartStacked;
   const chartOptions: ChartOptions<"bar" | "line"> = {
@@ -289,7 +217,8 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
       tooltip: {
         enabled: false,
         position: "nearest",
-        external: externalTooltipHandler,
+        external: (context) =>
+          externalTooltipHandler(context, hasPivot, isYAxisCurrency),
       },
     },
     scales: {
