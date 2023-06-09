@@ -108,7 +108,7 @@ export function externalTooltipHandler(
   dimensionLabelElement.innerText = context.tooltip.title[0];
 
   // create color + pivor labels
-  const { backgroundColor: labelColor, label: pivotText } =
+  const { borderColor: labelColor, label: pivotText } =
     context.tooltip.dataPoints[0].dataset;
   const pivotLabelElement = createElement("div", {
     alignItems: "center",

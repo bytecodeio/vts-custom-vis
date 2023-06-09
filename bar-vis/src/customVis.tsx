@@ -1,7 +1,7 @@
 import "./style.css";
 import { Looker, VisConfig, VisData } from "./types";
 import { createRoot } from "react-dom/client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { externalTooltipHandler, formatNumber } from "./utils";
 import {
   Chart as ChartJS,
@@ -16,6 +16,10 @@ import {
   BarController,
   ChartType,
   ChartOptions,
+  Filler,
+  ChartData,
+  Point,
+  BubbleDataPoint,
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -31,7 +35,8 @@ ChartJS.register(
   Legend,
   Tooltip,
   LineController,
-  BarController
+  BarController,
+  Filler
 );
 
 // Global values provided via the API
@@ -116,12 +121,38 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   //   }));
   // }
 
+  // config values
+  const {
+    isYAxisCurrency,
+    showXGridLines,
+    showYGridLines,
+    showXAxisLabel,
+    xAxisText,
+    showYAxisLabel,
+    yAxisText,
+    title,
+    showKpi,
+    kpiUnit,
+    isStacked,
+    showLineChartGradient,
+  } = config;
+
   // Chart type toggle
   interface ChartTypeOption {
     label: string;
     value: ChartType;
   }
 
+  // const chartTypeOptions: ChartTypeOption[] = [
+  //   {
+  //     label: "Bar",
+  //     value: "bar",
+  //   },
+  //   {
+  //     label: "Line",
+  //     value: "line",
+  //   },
+  // ];
   const chartTypeOptions: ChartTypeOption[] = [
     {
       label: "Bar",
@@ -157,52 +188,78 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     "00296b",
   ];
 
-  let datasets = [];
   const hasPivot = !!pivots && pivots.length > 0;
-  if (hasPivot) {
-    const pivotValues = Object.keys(data[0][measures[0]]);
-    pivotValues.forEach((pivotValue, i) => {
-      const columnData = data.map((row) => row[measures[0]][pivotValue].value);
+  const fill = showLineChartGradient ? "origin" : false;
 
-      datasets.push({
-        type: selectedChartType,
-        label: pivotValue,
-        backgroundColor: `#${colors[i]}`,
-        borderColor: `#${colors[i]}`,
-        data: columnData,
-        yAxisID: "yLeft",
-      });
-    });
-  } else {
-    datasets.push({
-      type: selectedChartType,
-      backgroundColor: `#${colors[0]}`,
-      borderColor: `#${colors[0]}`,
-      data: data.map((row) => row[measures[0]].value),
-      yAxisID: "yLeft",
-    });
+  const defaultChartData: ChartData<
+    | "bar"
+    | "line"
+    | "scatter"
+    | "bubble"
+    | "pie"
+    | "doughnut"
+    | "polarArea"
+    | "radar",
+    (number | Point | [number, number] | BubbleDataPoint)[],
+    any
+  > = {
+    labels,
+    datasets: [],
+  };
+  const [chartData, setChartData] = useState(defaultChartData);
+
+  function updateChartData(chartType: ChartType) {
+    let datasets = [];
+    let canvasElement = document.getElementById("chart") as HTMLCanvasElement;
+    if (canvasElement) {
+      const ctx = canvasElement.getContext("2d");
+      if (hasPivot) {
+        const pivotValues = Object.keys(data[0][measures[0]]);
+        pivotValues.forEach((pivotValue, i) => {
+          const columnData = data.map(
+            (row) => row[measures[0]][pivotValue].value
+          );
+
+          const gradientFill = ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            ctx.canvas.height / 2.2
+          );
+          gradientFill.addColorStop(0, `#${colors[i]}`);
+          gradientFill.addColorStop(1, `#${colors[i]}00`);
+
+          datasets.push({
+            type: chartType,
+            label: pivotValue,
+            backgroundColor:
+              chartType === "line" ? gradientFill : `#${colors[i]}`,
+            borderColor: `#${colors[i]}`,
+            pointBackgroundColor: `#${colors[i]}`,
+            data: columnData,
+            yAxisID: "yLeft",
+            fill,
+          });
+        });
+      } else {
+        datasets.push({
+          type: chartType,
+          backgroundColor: `#${colors[0]}`,
+          borderColor: `#${colors[0]}`,
+          data: data.map((row) => row[measures[0]].value),
+          yAxisID: "yLeft",
+          fill,
+        });
+      }
+      setChartData({ labels, datasets });
+    }
   }
 
-  // config values
-  const {
-    isYAxisCurrency,
-    showXGridLines,
-    showYGridLines,
-    showXAxisLabel,
-    xAxisText,
-    showYAxisLabel,
-    yAxisText,
-    title,
-    showKpi,
-    kpiUnit,
-    isBarChartStacked,
-  } = config;
-
-  // chart data
-  const chartData = { labels, datasets };
+  useEffect(() => {
+    updateChartData(selectedChartType);
+  }, []);
 
   // chart options
-  const isStacked = selectedChartType === "bar" && isBarChartStacked;
   const chartOptions: ChartOptions<"bar" | "line"> = {
     layout: {
       padding: {
@@ -268,6 +325,11 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     return newTotal;
   }, 0);
 
+  function handleChartTypeSelection(newChartType: ChartType) {
+    setSelectedChartType(newChartType);
+    updateChartData(newChartType);
+  }
+
   return (
     <div id="vis-wrapper">
       <div id="header">
@@ -285,7 +347,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
               <Button
                 active={selectedChartType === chartTypeOption.value}
                 key={chartTypeOption.value}
-                onClick={() => setSelectedChartType(chartTypeOption.value)}
+                onClick={() => handleChartTypeSelection(chartTypeOption.value)}
                 variant="outline-secondary"
               >
                 {chartTypeOption.label}
@@ -329,11 +391,7 @@ looker.plugins.visualizations.add({
   // The updateAsync method gets called any time the visualization rerenders due to any kind of change,
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
-    console.log("🚀 ~ file: customVis.tsx:252 ~ config:", config);
-    console.log("🚀 ~ file: customVis.tsx:330 ~ data:", data);
-    element.innerHTML = "";
     const lookerVis = this;
-    console.log("queryResponse", queryResponse);
 
     // config
     const configOptions: ConfigOptions = {
@@ -399,11 +457,17 @@ looker.plugins.visualizations.add({
         default: "sq ft",
         order: 10,
       },
-      isBarChartStacked: {
+      isStacked: {
         type: "boolean",
-        label: "Stacked Bar Chart",
+        label: "Stacked",
         default: true,
         order: 11,
+      },
+      showLineChartGradient: {
+        type: "boolean",
+        label: "Show Line Chart Gradient",
+        default: false,
+        order: 12,
       },
     };
 
