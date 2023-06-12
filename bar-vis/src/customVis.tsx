@@ -1,4 +1,4 @@
-import "./style.css";
+import "./style.scss";
 import { Looker, VisConfig, VisData } from "./types";
 import { createRoot } from "react-dom/client";
 import React, { useEffect, useState } from "react";
@@ -22,7 +22,7 @@ import {
   BubbleDataPoint,
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
-import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/scss/bootstrap.scss";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 
@@ -155,12 +155,12 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   // ];
   const chartTypeOptions: ChartTypeOption[] = [
     {
-      label: "Bar",
-      value: "bar",
-    },
-    {
       label: "Line",
       value: "line",
+    },
+    {
+      label: "Bar",
+      value: "bar",
     },
   ];
   const [selectedChartType, setSelectedChartType] = useState(
@@ -348,7 +348,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
                 active={selectedChartType === chartTypeOption.value}
                 key={chartTypeOption.value}
                 onClick={() => handleChartTypeSelection(chartTypeOption.value)}
-                variant="outline-secondary"
+                // variant="outline-secondary"
               >
                 {chartTypeOption.label}
               </Button>
