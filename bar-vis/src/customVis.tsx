@@ -208,6 +208,17 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   };
   const [chartData, setChartData] = useState(defaultChartData);
 
+  function createGradient(
+    ctx: CanvasRenderingContext2D,
+    startColor: string,
+    endColor: string
+  ): CanvasGradient {
+    const gradientFill = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+    gradientFill.addColorStop(0, startColor);
+    gradientFill.addColorStop(1, endColor);
+    return gradientFill;
+  }
+
   function updateChartData(chartType: ChartType) {
     let datasets = [];
     let canvasElement = document.getElementById("chart") as HTMLCanvasElement;
@@ -220,14 +231,11 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
             (row) => row[measures[0]][pivotValue].value
           );
 
-          const gradientFill = ctx.createLinearGradient(
-            0,
-            0,
-            0,
-            ctx.canvas.height / 2.2
+          const gradientFill = createGradient(
+            ctx,
+            `#${colors[i]}`,
+            `#${colors[i]}00`
           );
-          gradientFill.addColorStop(0, `#${colors[i]}`);
-          gradientFill.addColorStop(1, `#${colors[i]}00`);
 
           datasets.push({
             type: chartType,
@@ -242,10 +250,17 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
           });
         });
       } else {
+        const gradientFill = createGradient(
+          ctx,
+          `#${colors[0]}`,
+          `#${colors[0]}00`
+        );
         datasets.push({
           type: chartType,
-          backgroundColor: `#${colors[0]}`,
+          backgroundColor:
+            chartType === "line" ? gradientFill : `#${colors[0]}`,
           borderColor: `#${colors[0]}`,
+          pointBackgroundColor: `#${colors[0]}`,
           data: data.map((row) => row[measures[0]].value),
           yAxisID: "yLeft",
           fill,
