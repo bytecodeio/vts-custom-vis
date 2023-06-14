@@ -956,14 +956,16 @@ export const CustomTable = ({ data, config, queryResponse, details, done }) => {
   );
 
   return (
-    <Styles config={config}>
+    <Styles
+    config={config}
+    thColor={thColor}>
 
     {console.log("create-config", config)}
 
       <Table
       columns={columns}
       data={data}
-      thColor={thColor}
+
 
       />
       <Pagination
