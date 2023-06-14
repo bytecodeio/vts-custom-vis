@@ -4,51 +4,51 @@ import * as $ from "jquery";
 looker.plugins.visualizations.add({
   options: {
     // donut section
-    cutout: {
-      type: "string",
-      label: "Donut Cutout (percent)",
-      default: "25%",
-      display: "text",
-      placeholder: "25%",
-      section: "Chart",
-    },
-    donutColors: {
-      type: "array",
-      label: "Chart Colors",
-      display: "colors",
-      section: "Chart",
-    },
+    // cutout: {
+    //   type: "string",
+    //   label: "Donut Cutout (percent)",
+    //   default: "25%",
+    //   display: "text",
+    //   placeholder: "25%",
+    //   section: "Chart",
+    // },
+    // donutColors: {
+    //   type: "array",
+    //   label: "Chart Colors",
+    //   display: "colors",
+    //   section: "Chart",
+    // },
     // center value section
-    centerLabelText: {
-      type: "string",
-      label: "Center Label Text",
-      default: "Total",
-      display: "text",
-      placeholder: "Total",
-      section: "Center Values",
-    },
-    formatCenterValueNum: {
-      type: "boolean",
-      label: "Format Center Value Number",
-      default: true,
-      section: "Center Values",
-    },
-    centerValueFontSize: {
-      type: "string",
-      label: "Center Value Font Size (px)",
-      default: "32px",
-      display: "text",
-      placeholder: "32px",
-      section: "Center Values",
-    },
-    centerLabelFontSize: {
-      type: "string",
-      label: "Center Label Font Size (px)",
-      default: "14px",
-      display: "text",
-      placeholder: "14px",
-      section: "Center Values",
-    },
+    // centerLabelText: {
+    //   type: "string",
+    //   label: "Center Label Text",
+    //   default: "Total",
+    //   display: "text",
+    //   placeholder: "Total",
+    //   section: "Center Values",
+    // },
+    // formatCenterValueNum: {
+    //   type: "boolean",
+    //   label: "Format Center Value Number",
+    //   default: true,
+    //   section: "Center Values",
+    // },
+    // centerValueFontSize: {
+    //   type: "string",
+    //   label: "Center Value Font Size (px)",
+    //   default: "32px",
+    //   display: "text",
+    //   placeholder: "32px",
+    //   section: "Center Values",
+    // },
+    // centerLabelFontSize: {
+    //   type: "string",
+    //   label: "Center Label Font Size (px)",
+    //   default: "14px",
+    //   display: "text",
+    //   placeholder: "14px",
+    //   section: "Center Values",
+    // },
     // title section
     titleText: {
       type: "string",
@@ -59,14 +59,14 @@ looker.plugins.visualizations.add({
       section: "Title",
     },
 
-    subText: {
-      type: "string",
-      label: "Title Text",
-      default: "Dead Stage",
-      display: "text",
-      placeholder: "Dead Stage",
-      section: "Title",
-    },
+    // subText: {
+    //   type: "string",
+    //   label: "Subtext",
+    //   default: "Total",
+    //   display: "text",
+    //   placeholder: "Total",
+    //   section: "Title",
+    // },
     titleFontSize: {
       type: "string",
       label: "Title Font Size",
@@ -100,14 +100,22 @@ looker.plugins.visualizations.add({
       placeholder: "16px",
       section: "Legend",
     },
-    legendLocation: {
+    legendNumberFontSize: {
       type: "string",
-      label: "Legend Location",
-      display: "select",
-      values: [{ Right: "right" }, { Bottom: "bottom" }],
+      label: "Legend Number Font Size",
+      default: "16px",
+      display: "text",
+      placeholder: "16px",
       section: "Legend",
-      default: "right",
     },
+    // legendLocation: {
+    //   type: "string",
+    //   label: "Legend Location",
+    //   display: "select",
+    //   values: [{ Right: "right" }, { Bottom: "bottom" }],
+    //   section: "Legend",
+    //   default: "right",
+    // },
     legendDotRightMargin: {
       type: "string",
       label: "Legend Dot Right Margin",
@@ -222,6 +230,13 @@ looker.plugins.visualizations.add({
     .legend-label {
       boxWidth: ${config.legendboxWidth|| "16px"};
       boxHeight: ${config.legendboxHeight || "16px"};
+      font-size: ${config.legendFontSize || "16px"};
+
+    }
+
+    .legend-label2 {
+
+      font-size: ${config.legendNumberFontSize || "16px"};
 
     }
 
@@ -242,7 +257,9 @@ looker.plugins.visualizations.add({
     }
     #subTitle{
       font-weight: 300;
-      font-size: 15px;
+      font-size: ${config.subText || "14px"};
+
+
       margin-top:5px;
     }
 

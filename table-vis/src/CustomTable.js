@@ -1,464 +1,486 @@
-
-import "./style.css";
-import React, { cloneElement, useMemo } from "react";
+import React, { cloneElement, useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import { useTable, useBlockLayout, useResizeColumns, useSortBy } from "react-table";
 import { columnSize } from "@looker/components/DataTable/Column/columnSize";
 import { ContactPageSharp, DoNotStepOutlined, LegendToggle } from "@mui/icons-material";
-import * as $ from "jquery";
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
-import '../node_modules/bootstrap/dist/js/bootstrap.min.js';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Sparklines, SparklinesLine,  SparklinesCurve, SparklinesReferenceLine, SparklinesNormalBand, SparklinesSpots, SparklinesBars  } from "react-sparklines";
+import Pagination from "@mui/material/Pagination";
+import {  ProgressBar } from 'react-bootstrap';
 
+let {
+  thColor,
+  thFontSize
+} = config;
 
 const Styles = styled.div`
-  @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;300;500;600;700&family=Open+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Roboto:wght@100;500;700&display=swap");
-  @import url("https://kit-pro.fontawesome.com/releases/v5.15.1/css/pro.min.css");
 
-  #vis-container {
-    height: 100%;
-    max-height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    font-family: "IBM Plex Sans";
-    font-weight: 300;
-  }
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;300;500;600;700&family=Open+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Roboto:wght@100;500;700&display=swap");
+@import url("https://kit-pro.fontawesome.com/releases/v5.15.1/css/pro.min.css");
 
-  #vis {
-    min-height: 500px;
-  }
+#vis-container {
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: "IBM Plex Sans";
+  font-weight: 300;
+}
 
-  #vis th {
-    display: none !important;
-  }
+#vis {
+  min-height: 500px;
+}
 
-  body {
-    font-family: "IBM Plex Sans" !important;
-  }
-  thead th {
-    font-size: 12px !important;
-    color: #666666 !important;
-    font-weight: 300;
-    font-family: "IBM Plex Sans";
-    text-align: left;
-  }
-  tbody > tr > td {
-    vertical-align: middle;
-  }
+#spark1 svg,
+#spark2 svg {
 
-  tbody > tr > td,
-  tbody > tr > th,
-  tfoot > tr > td,
-  tfoot > tr > th,
-  thead > tr > td,
-  thead > tr > th {
-    border: none;
-  }
+    overflow: visible;
+    width:100%;
+}
 
-  table img {
-    width: 33px !important;
-  }
+#spark1 circle{
+  fill: transparent !important;
+}
 
-  .moveRight {
-    margin: 0em 0em 0em 0.5em !important;
-    font-family: "IBM Plex Sans";
-  }
+#spark2 circle{
+stroke-width: 3px !important;
+}
 
-  .d-flex{
-      display: flex;
-  }
-  .align-items-center{
-    align-items:center
-  }
+#spark1 svg path {
+stroke-width: 2px !important;
+}
+#spark2 svg polyline {
 
-  .flex-column{
-    flex-direction:column
-  }
-
-
-  .img-fluid {
-    max-width: 100%;
-    height: auto;
-  }
-
-  h3 {
-    color: #1d1e20 !important;
-    font-size: 13px !important;
-    margin-bottom: 0 !important;
-    color: #1d1e20 !important;
-    font-weight: 400 !important;
-    font-family: "IBM Plex Sans";
-    margin-top: 0 !important;
-  }
-  .var h3 {
-    width: 2em;
-  }
-
-  p.small {
-    color: #72777e !important;
-    font-weight: 300 !important;
-    font-size: 11px !important;
-    font-family: "IBM Plex Sans";
-  }
-
-  p {
-    margin: 0rem !important;
-  }
-
-  p.black {
-    color: black !important;
-  }
-
-  span.type {
-    margin-left: 0.75em;
-    font-size: 12px;
-    border-radius: 0.25rem;
-    padding: 0.25em 0.55em;
-  }
-
-  span.type.positive {
-    background: #eef8e8;
-    color: #39800b;
-  }
-
-  span.type.positive i {
-    transform: rotate(45deg);
-  }
-  span.type.negative {
-    background: #fbe7e5;
-    color: #c7200a;
-  }
-
-  span.type.negative i {
-    transform: rotate(315deg);
-  }
-
-  span.tag {
-    font-size: 11px;
-    padding: 0.25em 1.55em;
-    border-radius: 1rem;
-    color: #1d1e20;
-    font-weight: 400;
-  }
-
-  span.tag:first-child {
-    margin-right: 0.5em;
-  }
-
-  .neutral {
-    background: #e8edf3;
-  }
-
-  .branded {
-    background: #ccccff;
-  }
-
-  .critical {
-    background: #fdb6b0;
-  }
-
-  .warning {
-    background: #ffd87f;
-    position: relative;
-    padding: 0.25em 0.75em 0.25em 1.55em !important;
-  }
-  .warning::before {
-    font-family: "Font Awesome 5 Pro";
-    position: absolute;
-    content: "\f06a";
-    display: inline-block;
-    left: 5px;
-    top: 4px;
-  }
-
-  .success {
-    background: #d1ecc0;
-  }
-  .informational {
-    background: #b6dff7;
-    position: relative;
-    padding: 0.25em 0.75em 0.25em 1.55em !important;
-  }
-
-  .informational::before {
-    font-family: "Font Awesome 5 Pro";
-    position: absolute;
-    content: "\f05a";
-    display: inline-block;
-    left: 5px;
-    top: 4px;
-  }
-
-  .neg {
-    color: #c7200a;
-    font-size: 12px;
-  }
-
-  .pos {
-    color: #008759;
-    font-size: 12px;
-  }
-
-  .neut {
-    color: #ff9e00;
-    font-size: 12px;
-  }
-
-  p.sentiment {
-    font-size: 12px;
-  }
-  .mr-2{
-    margin-right:.55rem
-  }
-
-  .pr-1{
-    padding-right:.25rem
 
   }
 
-  .progress {
-    --bs-progress-height: 0.5rem !important;
-    --bs-progress-font-size: 0.55rem !important;
-    --bs-progress-bg: #e5e5e5 !important;
+.redGradient{
+  fill: rgb(199, 32, 10) !important;
+}
+
+
+body {
+  font-family: "IBM Plex Sans" !important;
+}
+thead th {
+  font-size: ${config.thFontSize || "12px"};
+  color: ${config.thColor || "#666666"};
+  font-weight: 300;
+  font-family: "IBM Plex Sans";
+  text-align: left;
+}
+tbody > tr > td {
+  vertical-align: middle;
+}
+
+.table tbody > tr > td,
+.table tbody > tr > th,
+.table tfoot > tr > td,
+.table tfoot > tr > th,
+.table thead > tr > td,
+.table thead > tr > th {
+  border: none;
+}
+
+table img {
+  width: 33px !important;
+}
+
+.moveRight {
+  margin: 0em 0em 0em 0.5em !important;
+  font-family: "IBM Plex Sans";
+}
+
+.d-flex{
+  display: flex;
+}
+.align-items-center{
+  align-items:center
+}
+
+.flex-column{
+  flex-direction:column
+}
+
+
+.img-fluid {
+  max-width: 100%;
+  height: auto;
+}
+
+h3 {
+  color: #1d1e20 !important;
+  font-size: 13px !important;
+  margin-bottom: 0 !important;
+  color: #1d1e20 !important;
+  font-weight: 400 !important;
+  font-family: "IBM Plex Sans";
+  margin-top: 0 !important;
+  min-width:2rem
+}
+.var h3 {
+  width: 2em;
+}
+
+p.small {
+  color: #72777e !important;
+  font-weight: 300 !important;
+  font-size: 11px !important;
+  font-family: "IBM Plex Sans";
+}
+
+p {
+  margin: 0rem !important;
+}
+
+p.black {
+  color: black !important;
+}
+
+span.type {
+
+  font-size: 12px;
+  border-radius: 0.25rem;
+  padding: 0.25em 0.55em;
+}
+
+span.type.positive {
+  background: #eef8e8;
+  color: #39800b;
+}
+
+span.type.positive i {
+  transform: rotate(45deg);
+}
+span.type.negative {
+  background: #fbe7e5;
+  color: #c7200a;
+}
+
+span.type.negative i {
+  transform: rotate(135deg);
+}
+
+li.tag {
+  font-size: 11px;
+  padding: 0.25em 1.55em;
+  border-radius: 1rem;
+  color: #1d1e20;
+  font-weight: 400;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+li.tag:first-child {
+
+}
+
+.neutral {
+  background: #e8edf3;
+  max-width: 5em;
+}
+
+.branded {
+  background: #ccccff;
+  max-width: 5em;
+}
+
+.critical {
+  background: #fdb6b0;
+  max-width: 5em;
+}
+
+.warning {
+  background: #ffd87f;
+  position: relative;
+  padding: 0.25em 0.75em 0.25em 1.55em !important;
+}
+.warning::before {
+  font-family: "Font Awesome 5 Pro";
+  position: absolute;
+  content: "\f06a";
+  display: inline-block;
+  left: 5px;
+  top: 4px;
+}
+
+.success {
+  background: #d1ecc0;
+  max-width: 5em;
+}
+.informational {
+  background: #b6dff7;
+  position: relative;
+  padding: 0.25em 0.75em 0.25em 1.55em !important;
+}
+
+.informational::before {
+  font-family: "Font Awesome 5 Pro";
+  position: absolute;
+  content: "\f05a";
+  display: inline-block;
+  left: 5px;
+  top: 4px;
+}
+
+
+.neg{
+  color:#C7200A;
+  font-size:12px;
+  position: relative;
+}
+
+
+.neg::before{
+  font-family: "Font Awesome 5 Pro";
+  position: absolute;
+  content: "\f119";
+  display: inline-block;
+  left: -15px;
+  top:2px
+}
+
+.pos{
+  color:#008759;
+  font-size:12px;
+  position:relative;
+}
+
+.pos::before{
+  font-family: "Font Awesome 5 Pro";
+  position: absolute;
+  content: "\f118";
+  display: inline-block;
+  left: -15px;
+  top:2px
+}
+
+.neut{
+  color:#FF9E00;
+  font-size:12px;
+  position:relative;
+}
+
+
+.neut::before{
+  font-family: "Font Awesome 5 Pro";
+  position: absolute;
+  content: "\f11a";
+  display: inline-block;
+  left: -15px;
+  top:2px
+}
+
+p.sentiment {
+  font-size: 12px;
+}
+.mr-2{
+  margin-right:.55rem
+}
+
+.pr-1{
+  padding-right:.25rem
+
+}
+
+.progress {
+  --bs-progress-height: 24px !important;
+    --bs-progress-font-size: 0.1rem !important;
+    --bs-progress-bg: transparent;
+    --bs-progress-border-radius: 2px !important;
+    --bs-progress-bar-color: #fff;
+    --bs-progress-bar-bg: #6253DA !important;
+     max-width: 180px !important;
+}
+
+
+.skinny .progress  {
+  --bs-progress-height: 8px !important;
+    --bs-progress-font-size: 0.1rem !important;
+    --bs-progress-bg: #E5E5E5 !important;
     --bs-progress-border-radius: 100px !important;
 
-    --bs-progress-bar-color: #fff;
-    --bs-progress-bar-bg: #887efc !important;
-    max-width: 70% !important;
+
+     width:200px !important
+}
+
+.skinny  .progress-bar {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    color: blue;
+    text-align: center;
+    white-space: nowrap;
+
+
+}
+
+.progress-label {
+
+  color: #000000;
+  font-size: 10px;
+
+  font-weight: 300;
+}
+
+.positiveBlock {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #39800B;
+  font-size: 14px;
+  font-weight: 600;
+  padding-left: 1em;
+}
+
+.positiveBlock:before {
+  position: absolute;
+  content: "";
+  width: 5em;
+  left: 0;
+  z-index: 1;
+
+  background-color: rgba(209, 236, 192, .5);
+  height: 100%;
+
+  min-height: 4em;
+
+
+}
+
+.negativeBlock:before {
+  position: absolute;
+  content: "";
+  width: 5em;
+  left: 0;
+  z-index: 1;
+
+  background-color: rgba(253, 182, 176, .5);
+  height: 100%;
+
+  min-height: 4em;
+
+}
+
+.negativeBlock {
+  position: relative;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #C7200A;
+  font-size: 14px;
+  font-weight: 600;
+  padding-left: 1em;
+}
+
+.positiveBlock p,
+.negativeBlock p {
+  position: relative;
+  z-index: 2;
+}
+
+#tagInfo ul{
+
+  margin: 0;
+  display: flex;
+  justify-content: flex-start;
+  margin-left: -3.5em;
+  flex-wrap: wrap;
+}
+
+#tagInfo li {
+  list-style:none;
+  margin-bottom:.2rem;
+  margin-right:.2rem
+}
+
+td div {
+  position: relative;
+}
+
+.react-bootstrap-table table {
+  table-layout: unset !important;
+}
+
+.avatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50%;
+
+  object-fit: cover;
+  object-position: center right;
+}
+
+
+
+tr {
+  border-bottom: 1px solid #d0d9e1;
+}
+
+td {
+  display: flex !important;
+
+  align-items: center;
+}
+
+.table {
+  font-family: "IBM Plex Sans";
+  display: inline-block;
+  border-spacing: 0;
+
+  .th {
+    font-size: 12px;
+    text-transform: capitalize;
+    font-family: "IBM Plex Sans";
+    color: white;
+    text-align: left;
+    border-right: 1px solid white;
+    font-weight: 200;
+  }
+  .td {
+    font-size: 12px;
+    text-align: left;
+    font-family: "IBM Plex Sans";
   }
 
-  .progress-label {
+  .th,
+  .td {
+    margin: 0;
+    padding: 0.5rem;
+    font-family: "IBM Plex Sans";
+    position: relative;
+  }
+
+
+  .td:last-child {
+    border-right: 0;
+  }
+
+  .resizer {
+    display: inline-block;
+    width: 10px;
+    height: 100%;
     position: absolute;
     right: 0;
-    color: #000000;
-    font-size: 10px;
-    top: -3px;
-    font-weight: 300;
-  }
+    top: 0;
+    transform: translateX(50%);
+    z-index: 1;
 
-  .positiveBlock {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #000000;
-    font-size: 14px;
-    font-weight: 300;
-  }
+    touch-action:none;
 
-  .positiveBlock:before {
-    position: absolute;
-    content: "";
-    width: 100%;
-    height: 236%;
-
-    left: 0;
-    background-color: rgba(209, 236, 192, 1);
-    z-index: -1;
-  }
-
-  .negativeBlock:before {
-    position: absolute;
-    content: "";
-    width: 100%;
-    height: 240%;
-
-    left: 0;
-    background-color: rgba(253, 182, 176, 1);
-    z-index: -1;
-  }
-
-  .negativeBlock {
-    position: relative;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #000000;
-    font-size: 14px;
-    font-weight: 300;
-  }
-
-  td div {
-    position: relative;
-  }
-
-  .react-bootstrap-table table {
-    table-layout: unset !important;
-  }
-
-  .avatar {
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 50%;
-
-    object-fit: cover;
-    object-position: center right;
-  }
-
-  @media (max-width: 991px) {
-    .positiveBlock:before,
-    .negativeBlock:before {
-      width: 0%;
-      height: 0%;
-    }
-
-    .positiveBlock,
-    .negativeBlock {
-      justify-content: flex-start;
-    }
-    thead th {
-      display: none;
-    }
-    tbody td,
-    tbody th {
-      display: block;
-    }
-
-    tbody {
-      display: flex;
-      flex-wrap: wrap;
-      width: 100%;
-    }
-    tr {
-      width: 50%;
-      margin-bottom: 2em;
-    }
-
-    [row-header] {
-      position: relative;
-      width: 50%;
-      vertical-align: middle;
-    }
-    [row-header]:before {
-      content: attr(row-header);
-      display: inline-block;
-      vertical-align: middle;
-      text-align: left;
-      width: 50%;
-      padding-right: 30px;
+    &.isResizing {
     }
   }
+}
 
-  tr {
-    border-bottom: 1px solid #d0d9e1;
-  }
-
-  td {
-    display: flex !important;
-
-    align-items: center;
-  }
-
-  .table {
-    font-family: "IBM Plex Sans";
-    display: inline-block;
-    border-spacing: 0;
-
-    .th {
-      font-size: 12px;
-      text-transform: capitalize;
-      font-family: "IBM Plex Sans";
-      color: white;
-      text-align: left;
-      border-right: 1px solid white;
-      font-weight: 200;
-    }
-    .td {
-      font-size: 12px;
-      text-align: left;
-      font-family: "IBM Plex Sans";
-    }
-
-    .th,
-    .td {
-      margin: 0;
-      padding: 0.5rem;
-      font-family: "IBM Plex Sans";
-
-      ${
-        "" /* In this example we use an absolutely position resizer,
-       so this is required. */
-      }
-      position: relative;
-
-      :last-child {
-        border-right: 0;
-      }
-
-      .resizer {
-        display: inline-block;
-        width: 10px;
-        height: 100%;
-        position: absolute;
-        right: 0;
-        top: 0;
-        transform: translateX(50%);
-        z-index: 1;
-        ${"" /* prevents from scrolling while dragging on touch devices */}
-        touch-action:none;
-
-        &.isResizing {
-        }
-      }
-    }
-  }
 `;
 
-function Table({ columns, data }) {
-  // BEGIN:01 - This is the code that allows the table to have dynamic columns based on included data
-  // let workingCols = []
-
-  // columns.map(
-  //   (col) => {
-  //     // console.log("col accessor", col.accessor)
-  //     workingCols.push(col.accessor)
-  //   }
-  // )
-
-  // // loop through each item for each key, removing a key when data is detected for that key.
-  // // remove any colums with matching keys at are left after check
-
-  // // TODO: need to convert to for look so we can break out of it when we detemine all columns contain data.
-  // data.map((item) => {
-
-  //   let tempCols = []
-
-  //   workingCols.map(
-  //     (key) => {
-  //       if (item[key].value.toString().trim().length > 0) {
-  //         // data, will remote from array of columns to remote.
-  //         tempCols.push(key)
-  //       }
-  //       // remove tempCols from workingCols and continue loop.
-  //       // if len of workingCols = 0, break loop.
-  //     })
-
-  //   // remove tempCols from workingCols and continue loop.
-  //   tempCols.map((item) => {
-  //     let index = workingCols.indexOf(item);
-  //     if (index !== -1) {
-  //       workingCols.splice(index, 1);
-  //     }
-  //   })
-  //   // if len of workingCols = 0, break loop. TODO
-
-  // })
-
-  // // testing
-  // // workingCols = ["show_viz"]
-  // // if any workingCols are left, they have no data, remove time from columns.
-  // workingCols.map((col) => {
-  //   const index = columns.findIndex(object => {
-  //     return object.accessor === col;
-  //   });
-
-  //   if (index !== -1) {
-  //     columns.splice(index, 1);
-  //   }
-  // })
-  // END:01 - This is the code that allows the table to have dynamic columns based on included data
+function Table({ columns, data, config }) {
 
   const defaultColumn = React.useMemo(
     () => ({
@@ -528,56 +550,105 @@ function Table({ columns, data }) {
     </>
   );
 }
-
 const createLabel = (label) => {
   const splitByDot = label.split(".").join(" ");
   const splitByDash = splitByDot.split("_").join(" ");
   return splitByDash;
 };
 
+
+const PaginationComponent = () => {
+
+  const [page, setMyPage] = useState([]);
+  const setPage = () => {
+    setMyPage();
+  };
+  return (
+    <Pagination numOfLinks={6} page={page} setPage={setPage} total={100} />
+  );
+}
+
+
+
+
+
 export const CustomTable = ({ data, config, queryResponse, details, done }) => {
+
+  const [tableData, setTableData] = useState([]);
+
+   useEffect(() => {
+
+       setTableData(data);
+
+
+   }, []);
+
+
+
   const [firstData = {}] = data;
 
-  // Find cols to remove.  These will be passed thorugh a comma delimited list in a dimension
-  // currently nanmed columns_to_hide
   let cols_to_hide = [];
   for (const [key, value] of Object.entries(firstData)) {
+
     if (key.split(".")[1] === "columns_to_hide") {
       cols_to_hide = firstData[key].value.split(",").map((e) => e.trim());
       break;
     }
   }
 
-  // if we have any to hide, just remove them:
+
   cols_to_hide.map((col) => {
     delete firstData[col];
   });
 
-  // const data2 = useMemo(() => data, [] )
+  const data2 = useMemo(() => data, [] )
 
-  // console.log("Object.keys(firstData)", Object.keys(firstData));
+  console.log(data)
+  console.log("Object.keys(firstData)", Object.keys(firstData));
 
   const columns = useMemo(
     () =>
       Object.keys(firstData)
-       .filter((key) => key.indexOf("logo_text") === -1
+       .filter((key) =>
+       key.indexOf("logo_text") === -1
        && key.indexOf("property_floor") === -1
        && key.indexOf("units_occupied_yoy_delta") === -1
        && key.indexOf("sentiment_date") === -1
        && key.indexOf("avatar_name") === -1
-       && key.indexOf("watch_count") === -1)
-        .map((key) => {
-          const [tableKeyword, slicedKey] = key.split(".");
+       && key.indexOf("watch_count") === -1
+       // && key !== "average_reference_line"
+     )
+        .map( (key ) => {
+        // const [tableKeyword, slicedKey] = key.split(".");
+          var slicedKey = []
+          var tableKeyword =[]
+          if (key !== "progress_bar"){
+          console.log(key, slicedKey)
+           var [tableKeyword, slicedKey] = key.split(".");
+          }
+
+          if (key === "progress_bar"){
+          console.log(key, slicedKey)
+           var [tableKeyword, slicedKey] = key;
+
+          }
+
+          // if (key === "average_reference_line"){
+          // console.log(key, slicedKey)
+          //  var [tableKeyword, slicedKey] = key;
+          //
+          // }
+
+          console.log(key, slicedKey)
           const dimension = config.query_fields.dimensions.find(
             (dimension) => dimension.name === key
           );
           return {
             Header:
 
+              // slicedKey === "progress_bar"? "Progress Bar" : dimension?.field_group_variant ||
 
-              // slicedKey === "logo_url"? "Logo + Text" : dimension?.field_group_variant ||
-
-               dimension?.field_group_variant ||
+              dimension?.field_group_variant ||
               config.query_fields.measures.find((dimension) => dimension.name === key)
                 ?.field_group_variant ||
               slicedKey,
@@ -597,15 +668,17 @@ export const CustomTable = ({ data, config, queryResponse, details, done }) => {
 
             Cell: ({ cell, value, row }) => {
               // const row = cell.row.original;
+
+
               if (slicedKey === "logo_url") {
                 return (
                   <>
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center" id="logoText">
                     <img src={row.original[key]?.rendered || row.original[key]?.value} alt="" class="img-fluid"/>
                       <p class="moveRight">
                       {row.original[tableKeyword + ".logo_text"]?.rendered ||
                         row.original[tableKeyword + ".logo_text"]?.value}
-                    </p>
+                      </p>
                     </div>
                   </>
                 );
@@ -614,7 +687,7 @@ export const CustomTable = ({ data, config, queryResponse, details, done }) => {
               if (slicedKey === "property_name") {
                 return (
                   <>
-                  <div class="d-flex flex-column">
+                  <div class="d-flex flex-column" id="propertyInfo">
                       <h3>{row.original[key]?.rendered || row.original[key]?.value}</h3>
                       <p class="small">
                       {row.original[tableKeyword + ".property_floor"]?.rendered ||
@@ -630,9 +703,10 @@ export const CustomTable = ({ data, config, queryResponse, details, done }) => {
                 return (
                   <>
 
-                  <div class="var d-flex justify-content-start align-items-center">
+                  <div class="var d-flex justify-content-start align-items-center" id="unitVariance">
                     <h3>{row.original[key]?.rendered || row.original[key]?.value}</h3>
-                    <span class="type positive"><i class="fal fa-arrow-up mr-2"></i>
+                    <span className={row.original[tableKeyword + ".units_occupied_yoy_delta"]?.value < 0 ? "type negative" : "type positive"}>
+                    <i class="fal fa-arrow-up mr-2"></i>
                     {row.original[tableKeyword + ".units_occupied_yoy_delta"]?.rendered ||
                     row.original[tableKeyword + ".units_occupied_yoy_delta"]?.value}</span>
                   </div>
@@ -645,11 +719,12 @@ export const CustomTable = ({ data, config, queryResponse, details, done }) => {
                 return (
                   <>
 
-                  <div class="d-flex flex-column">
-                  <p class="pos"><i class="far fa-smile"></i> {row.original[key]?.rendered || row.original[key]?.value}</p>
-                  <p class="small mr-2">
-                  {row.original[tableKeyword + ".sentiment_date"]?.rendered ||
-                  row.original[tableKeyword + ".sentiment_date"]?.value}</p>
+                  <div class="d-flex flex-column" id="sentimentInfo">
+                    <p className={row.original[key]?.value === "Positive" ? "pos" : row.original[key]?.value === "Negative" ? "neg" :  'neut'}>
+                    {row.original[key]?.rendered || row.original[key]?.value}</p>
+                    <p class="small mr-2">
+                    {row.original[tableKeyword + ".sentiment_date"]?.rendered ||
+                    row.original[tableKeyword + ".sentiment_date"]?.value}</p>
                   </div>
 
                   </>
@@ -660,11 +735,12 @@ export const CustomTable = ({ data, config, queryResponse, details, done }) => {
                 return (
                   <>
 
-                <div class="d-flex align-items-center"><h3 class="mr-2"><i class="far fa-key"></i> {row.original[key]?.rendered || row.original[key]?.value}</h3>
-                  <h3><i class="far fa-eye pr-1"></i>
-                  {row.original[tableKeyword + ".watch_count"]?.rendered ||
-                  row.original[tableKeyword + ".watch_count"]?.value}
-                  </h3>
+                <div class="d-flex align-items-center" id="keyWatch">
+                    <h3 class="mr-2"><i class="far fa-key"></i> {row.original[key]?.rendered || row.original[key]?.value}</h3>
+                    <h3><i class="far fa-eye pr-1"></i>
+                    {row.original[tableKeyword + ".watch_count"]?.rendered ||
+                    row.original[tableKeyword + ".watch_count"]?.value}
+                    </h3>
                   </div>
 
                   </>
@@ -674,7 +750,8 @@ export const CustomTable = ({ data, config, queryResponse, details, done }) => {
               if (slicedKey === "avatar_url") {
                 return (
                   <>
-               <div class="d-flex align-items-center"><img class="img-fluid avatar mr-2" src={row.original[key]?.rendered || row.original[key]?.value}/>
+               <div class="d-flex align-items-center" id="avatarInfo">
+               <img class="img-fluid avatar mr-2" src={row.original[key]?.rendered || row.original[key]?.value}/>
                    <p class="ms-2 small black">
                    {row.original[tableKeyword + ".avatar_name"]?.rendered ||
                    row.original[tableKeyword + ".avatar_name"]?.value}
@@ -685,15 +762,189 @@ export const CustomTable = ({ data, config, queryResponse, details, done }) => {
                 );
               }
 
+           if (slicedKey === "unit_variance") {
+             return (
+               <>
+
+               <div className={row.original[key]?.value < 0 ? "negativeBlock" : "positiveBlock"}><p>{row.original[key]?.rendered || row.original[key]?.value}%</p></div>
+
+                 </>
+               );
+
+            }
+
               if (slicedKey === "tags") {
+
+                var tags = row.original[key]?.value
+                const items = tags.map((hero, index)=>
+                 <li className={hero === "Critical" ? "tag critical" : hero === "Warning" ? "tag warning" : hero === "Informational" ? "tag informational" : hero === "Neutral" ? "tag neutral" : hero === "Branded" ? "tag branded" :  'tag success'}
+                 >{hero}</li>
+                 )
                 return (
                   <>
 
-                  <div class="d-flex justify-content-start align-items-center mb-0"><span class="tag warning">{row.original[key]?.rendered || row.original[key]?.value}</span></div>
+                  <div class="mb-0" id="tagInfo">
+                      <ul>
+                       {items}
+                      </ul>
+                  </div>
 
 
                   </>
                 );
+              }
+
+
+           if (slicedKey === "sum_total_units") {
+
+             return (
+               <>
+
+              <div className="position-relative">
+                <div className="progress">
+                <div className="progress-bar" role="progressbar" style={{width:row.original[key]?.value}}>
+                </div>
+                </div>
+                <span className="progress-label">{row.original[key]?.rendered || row.original[key]?.value}</span>
+              </div>
+
+              </>
+            );
+
+            }
+
+            if (slicedKey === "sparkline_list_2") {
+
+                var arry = row.original[key]?.value
+
+                function calculateAverage(array) {
+                  var total = 0;
+                  var count = 0;
+                  array.forEach(function(item, index) {
+                      total += item;
+                      count++;
+                  });
+
+                return total / count;
+                }
+
+                var average = calculateAverage(arry)
+
+                  const iterator = arry.values();
+                  var val = ''
+
+                  for (var value of iterator) {
+                    var val = value;
+
+                    if (val > average){
+                      // console.log(val)
+                    }
+
+
+                  }
+
+
+                  var last = row.original[key]?.value[row.original[key]?.value.length - 1];
+                  var first = row.original[key]?.value[0];
+
+
+                  return (
+
+                    <div id="spark2">
+
+                    <Sparklines
+                    data={row.original[key]?.value}
+                    limit={10}
+                    width={198}
+                    height={38}
+                    margin={0}
+                    strokeWidth={"2px"}
+                    >
+                  <SparklinesLine style={{ strokeWidth: 3, stroke: last < first  ? "#C7200A" : "#39800B", fill: "none" }} />
+                  <SparklinesSpots
+                      size={4}
+
+                      style={{ stroke:  last < first  ? "#C7200A" : "#39800B", strokeWidth: 3, fill: "white" }} />
+                  </Sparklines>
+
+                    </div>
+
+
+                 );
+
+            }
+
+            if (slicedKey === "sparkline_list") {
+
+              var last = row.original[key]?.value[row.original[key]?.value.length - 1];
+              const first = row.original[key]?.value[0];
+
+            var LinearGradientFill = stopColor => {
+              var stopColor1 = "rgb(199, 32, 10)";
+              var stopColor2 = "rgb(57, 128, 11)";
+
+                return (
+                  <linearGradient
+                    id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%"  stopColor={last < first  ? stopColor1 : stopColor2} stopOpacity="1" />
+                    <stop offset="100%" stopColor={last < first  ? stopColor1 : stopColor2} stopOpacity="0" />
+                  </linearGradient>
+
+                );
+              };
+
+              return (
+                <div id="spark1">
+                <Sparklines
+                  data={row.original[key]?.value}
+                  limit={10}
+                  width={198}
+                  height={38}
+                  margin={0}
+                  strokeWidth={"2px"}
+                  >
+                  <svg>
+                    <defs>
+                      <LinearGradientFill />
+
+                    </defs>
+                  </svg>
+
+                <SparklinesCurve
+                  color={ last < first  ? "#C7200A" : "#39800B"}
+                  style={{
+				                strokeWidth: 5,
+                        // fill: 'url(#gradient)'
+
+			            }}
+                  strokeWidth={"2px"}
+                  type={"area"}
+
+                  />
+
+                </Sparklines>
+
+               </div>
+             );
+
+            }
+
+              if (key === "progress_bar") {
+
+                  const now = row.original[key]?.value * 100;
+
+                  console.log(now)
+
+                return (
+                  <>
+                  <div className="skinny">
+                    <ProgressBar now={now} label={`${now}%`} visuallyHidden />
+                    <span className="progress-label">{row.original[key]?.rendered || row.original[key]?.value}</span>
+                 </div>
+
+                 </>
+               );
+
               }
 
               return row.original[key]?.rendered || row.original[key]?.value;
@@ -705,8 +956,22 @@ export const CustomTable = ({ data, config, queryResponse, details, done }) => {
   );
 
   return (
-    <Styles>
-      <Table columns={columns} data={data} />
+    <Styles config={config}>
+
+    {console.log("create-config", config)}
+
+      <Table
+      columns={columns}
+      data={data}
+      thColor={thColor}
+
+      />
+      <Pagination
+      count={3}
+      variant="outlined"
+      shape="rounded"
+      />
     </Styles>
   );
-};
+
+}

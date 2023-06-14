@@ -21,12 +21,14 @@ module.exports = {
         include: /src/,
         sideEffects: false,
       },
-      { test: /\.css$/i, use: ["to-string-loader", "css-loader"] },
-    
+      { test: /\.css$/i,
+        use: ["style-loader", "css-loader"],
+      },
+
     ],
   },
   resolve: {
-    extensions: [".jsx", ".js"],
+    extensions: [".jsx", ".js", ".css"],
     fallback: { buffer: false },
   },
   devtool: "source-map",
