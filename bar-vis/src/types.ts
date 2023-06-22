@@ -1,3 +1,15 @@
+import { TooltipYAlignment } from "chart.js";
+
+export interface TooltipData {
+  dimensionLabel: string;
+  left: string;
+  measureValue: string;
+  pivotColor: string;
+  pivotText: string;
+  top: string;
+  yAlign: TooltipYAlignment;
+}
+
 // API Globals
 // pulled from https://github.com/looker/custom_visualizations_v2/blob/master/src/examples/types/types.ts
 export interface Looker {

@@ -1,8 +1,8 @@
 import "./style.scss";
-import { Looker, VisConfig, VisData } from "./types";
+import { Looker, TooltipData, VisConfig, VisData } from "./types";
 import { createRoot } from "react-dom/client";
 import React, { useEffect, useState } from "react";
-import { externalTooltipHandler, formatNumber } from "./utils";
+import { formatNumber } from "./utils";
 import {
   Chart as ChartJS,
   LinearScale,
@@ -11,7 +11,7 @@ import {
   PointElement,
   LineElement,
   Legend,
-  Tooltip,
+  Tooltip as ChartJsTooltip,
   LineController,
   BarController,
   ChartType,
@@ -20,7 +20,10 @@ import {
   ChartData,
   Point,
   BubbleDataPoint,
+  ChartTypeRegistry,
+  TooltipModel,
 } from "chart.js";
+import Tooltip from "./Tooltip";
 import { Chart } from "react-chartjs-2";
 import "bootstrap/scss/bootstrap.scss";
 import Button from "react-bootstrap/Button";
@@ -33,7 +36,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   Legend,
-  Tooltip,
+  ChartJsTooltip,
   LineController,
   BarController,
   Filler
@@ -143,26 +146,26 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     value: ChartType;
   }
 
-  // const chartTypeOptions: ChartTypeOption[] = [
-  //   {
-  //     label: "Bar",
-  //     value: "bar",
-  //   },
-  //   {
-  //     label: "Line",
-  //     value: "line",
-  //   },
-  // ];
   const chartTypeOptions: ChartTypeOption[] = [
-    {
-      label: "Line",
-      value: "line",
-    },
     {
       label: "Bar",
       value: "bar",
     },
+    {
+      label: "Line",
+      value: "line",
+    },
   ];
+  // const chartTypeOptions: ChartTypeOption[] = [
+  //   {
+  //     label: "Line",
+  //     value: "line",
+  //   },
+  //   {
+  //     label: "Bar",
+  //     value: "bar",
+  //   },
+  // ];
   const [selectedChartType, setSelectedChartType] = useState(
     chartTypeOptions[0].value
   );
@@ -274,6 +277,48 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     updateChartData(selectedChartType);
   }, []);
 
+  // chart tooltip
+  const [tooltip, setTooltip] = useState<TooltipData | null>(null);
+
+  interface TooltipContext {
+    chart: ChartJS<
+      keyof ChartTypeRegistry,
+      (number | Point | [number, number] | BubbleDataPoint)[],
+      unknown
+    >;
+    tooltip: TooltipModel<"bar" | "line">;
+  }
+
+  function externalTooltipHandler(
+    context: TooltipContext,
+    isYAxisCurrency: boolean,
+    setTooltip: (newState: TooltipData | null) => void
+  ) {
+    const isTooltipVisible = context.tooltip.opacity !== 0;
+    if (isTooltipVisible) {
+      const position = context.chart.canvas.getBoundingClientRect();
+      setTooltip({
+        dimensionLabel: context.tooltip.title[0],
+        left:
+          position.left + window.pageXOffset + context.tooltip.caretX + "px",
+        measureValue: `${isYAxisCurrency ? "$" : ""}${
+          context.tooltip.dataPoints[0].formattedValue
+        }`,
+        pivotColor: context.tooltip.dataPoints[0].dataset.borderColor as string,
+        pivotText: context.tooltip.dataPoints[0].dataset.label,
+        top:
+          position.top +
+          window.pageYOffset +
+          context.tooltip.caretY -
+          20 +
+          "px",
+        yAlign: context.tooltip.yAlign,
+      });
+    } else {
+      setTooltip(null);
+    }
+  }
+
   // chart options
   const chartOptions: ChartOptions<"bar" | "line"> = {
     layout: {
@@ -290,7 +335,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
         enabled: false,
         position: "nearest",
         external: (context) =>
-          externalTooltipHandler(context, hasPivot, isYAxisCurrency),
+          externalTooltipHandler(context, isYAxisCurrency, setTooltip),
       },
     },
     scales: {
@@ -393,6 +438,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
           id="chart"
           plugins={chartPlugins}
         />
+        {tooltip && <Tooltip hasPivot={hasPivot} tooltipData={tooltip} />}
       </div>
     </div>
   );

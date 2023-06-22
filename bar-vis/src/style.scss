@@ -67,3 +67,45 @@ $text-color: #1d1e20;
     background-color: #e8edf3;
   }
 }
+
+// Chart tooltip
+#chartjs-tooltip {
+  opacity: 1;
+  position: absolute;
+  padding: 8px 10px;
+  pointer-events: none;
+  background-color: #1d1e20;
+  color: #ffffff;
+  border-radius: 4px;
+  padding-right: 30px;
+
+  .dimension-label {
+    color: #bbbfc4;
+    font-size: 10px;
+    font-weight: 400;
+  }
+
+  .pivot-label {
+    align-items: center;
+    display: flex;
+
+    .pivot-color {
+      border-radius: 1px;
+      display: inline-block;
+      height: 8px;
+      width: 8px;
+    }
+
+    .pivot-text {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+  }
+
+  .measure-value {
+    font-size: 12px;
+    font-weight: 400px;
+  }
+}
