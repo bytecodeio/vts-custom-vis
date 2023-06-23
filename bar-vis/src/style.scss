@@ -102,46 +102,51 @@ $text-color: #1d1e20;
       font-weight: 600;
       margin-left: 6px;
     }
+  }
 
-    .period-comparison-wrapper {
-      display: flex;
-      align-items: center;
-      font-size: 10px;
-      line-height: 14px;
-      display: flex;
-      border-radius: 4px;
-      padding: 1px 2px;
-      margin-left: 10px;
-    }
-
-    .positive-background {
-      background-color: rgba(0, 188, 64, 0.23);
-    }
-
-    .negative-background {
-      background-color: rgba(230, 0, 0, 0.25);
-    }
-
-    .comparison-value {
-      margin-left: 3px;
-    }
-
-    .positive-text {
-      color: #4bbe00;
-    }
-
-    .negative-text {
-      color: #ff1e00;
-    }
-
-    #comparison-label {
-      font-size: 10px;
-      margin-left: 6px;
-    }
+  .measure-comparison-wrapper {
+    display: flex;
+    align-items: center;
   }
 
   .measure-value {
     font-size: 12px;
     font-weight: 400px;
+  }
+
+  .period-comparison-wrapper {
+    display: flex;
+    align-items: center;
+    font-size: 10px;
+    line-height: 14px;
+    display: flex;
+    border-radius: 4px;
+    padding: 1px 2px;
+    margin-left: 10px;
+  }
+
+  .positive-background {
+    background-color: rgba(0, 188, 64, 0.23);
+  }
+
+  .negative-background {
+    background-color: rgba(230, 0, 0, 0.25);
+  }
+
+  .comparison-value {
+    margin-left: 3px;
+  }
+
+  .positive-text {
+    color: #4bbe00;
+  }
+
+  .negative-text {
+    color: #ff1e00;
+  }
+
+  #comparison-label {
+    font-size: 10px;
+    margin-left: 6px;
   }
 }

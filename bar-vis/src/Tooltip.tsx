@@ -5,12 +5,16 @@ import { TooltipData, TooltipRow } from "./types";
 
 interface TooltipRowProps {
   hasPivot: boolean;
+  style: React.CSSProperties;
   tooltipRow: TooltipRow;
 }
 
-const TooltipRow: React.FC<TooltipRowProps> = ({ hasPivot, tooltipRow }) => {
+const TooltipRow: React.FC<TooltipRowProps> = ({
+  hasPivot,
+  style,
+  tooltipRow,
+}) => {
   const {
-    dimensionLabel,
     hasPreviousPeriod,
     measureValue,
     periodComparisonValue,
@@ -19,8 +23,7 @@ const TooltipRow: React.FC<TooltipRowProps> = ({ hasPivot, tooltipRow }) => {
   } = tooltipRow;
 
   return (
-    <>
-      <div className="dimension-label">{dimensionLabel}</div>
+    <div className="tooltip-row" style={style}>
       {hasPivot && (
         <div className="pivot-label">
           <div
@@ -28,35 +31,37 @@ const TooltipRow: React.FC<TooltipRowProps> = ({ hasPivot, tooltipRow }) => {
             style={{ backgroundColor: pivotColor }}
           ></div>
           <div className="pivot-text">{pivotText}</div>
-          {hasPreviousPeriod && (
-            <div
-              className={`period-comparison-wrapper ${
+        </div>
+      )}
+      <div className="measure-comparison-wrapper">
+        <div className="measure-value">{measureValue}</div>
+        {hasPreviousPeriod && (
+          <div
+            className={`period-comparison-wrapper ${
+              periodComparisonValue > 0
+                ? "positive-background"
+                : periodComparisonValue < 0
+                ? "negative-background"
+                : ""
+            }`}
+          >
+            {periodComparisonValue > 0 && <UpArrowSVG />}
+            {periodComparisonValue < 0 && <DownArrowSVG />}
+            <span
+              className={`comparison-value ${
                 periodComparisonValue > 0
-                  ? "positive-background"
+                  ? "positive-text"
                   : periodComparisonValue < 0
-                  ? "negative-background"
+                  ? "negative-text"
                   : ""
               }`}
             >
-              {periodComparisonValue > 0 && <UpArrowSVG />}
-              {periodComparisonValue < 0 && <DownArrowSVG />}
-              <span
-                className={`comparison-value ${
-                  periodComparisonValue > 0
-                    ? "positive-text"
-                    : periodComparisonValue < 0
-                    ? "negative-text"
-                    : ""
-                }`}
-              >
-                {Math.abs(Math.round(periodComparisonValue)).toLocaleString()}%
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-      <div className="measure-value">{measureValue}</div>
-    </>
+              {Math.abs(Math.round(periodComparisonValue)).toLocaleString()}%
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
@@ -66,15 +71,20 @@ interface TooltipProps {
 }
 
 const Tooltip: React.FC<TooltipProps> = ({ hasPivot, tooltipData }) => {
-  const { left, rows, top, yAlign } = tooltipData;
+  const { dimensionLabel, left, rows, top, yAlign } = tooltipData;
 
   return (
     <div
       className={`chartjs-tooltip ${yAlign ?? "no-transform"}`}
       style={{ left, top }}
     >
-      {rows.map((tooltipRow) => (
-        <TooltipRow hasPivot={hasPivot} tooltipRow={tooltipRow} />
+      <div className="dimension-label">{dimensionLabel}</div>
+      {rows.map((tooltipRow, i) => (
+        <TooltipRow
+          hasPivot={hasPivot}
+          style={{ marginTop: i > 0 ? "8px" : "3px" }}
+          tooltipRow={tooltipRow}
+        />
       ))}
     </div>
   );

@@ -139,6 +139,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     kpiUnit,
     isStacked,
     showLineChartGradient,
+    showAllValuesInTooltip,
   } = config;
 
   // Chart type toggle
@@ -172,9 +173,12 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   );
 
   // map Looker query data to ChartJS data format
-  const { dimensions, measures, pivots } = fields;
+  const dimensionName = fields.dimensions[0];
+  const measureName = fields.measures[0];
+  const previousPeriodFieldName = fields.measures[1];
+
   const labels = data.map(
-    (row) => row[dimensions[0]].rendered ?? row[dimensions[0]].value ?? "∅"
+    (row) => row[dimensionName].rendered ?? row[dimensionName].value ?? "∅"
   );
 
   // const colors = ["#6253DA", "#D0D9E1", "#6CBFEF", "#A3D982", "#E192ED"];
@@ -192,7 +196,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     "00296b",
   ];
 
-  const hasPivot = !!pivots && pivots.length > 0;
+  const hasPivot = !!fields.pivots && fields.pivots.length > 0;
   const fill = showLineChartGradient ? "origin" : false;
 
   const defaultChartData: ChartData<
@@ -229,10 +233,10 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     if (canvasElement) {
       const ctx = canvasElement.getContext("2d");
       if (hasPivot) {
-        const pivotValues = Object.keys(data[0][measures[0]]);
+        const pivotValues = Object.keys(data[0][measureName]);
         pivotValues.forEach((pivotValue, i) => {
           const columnData = data.map(
-            (row) => row[measures[0]][pivotValue].value
+            (row) => row[measureName][pivotValue].value
           );
 
           const gradientFill = createGradient(
@@ -265,7 +269,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
             chartType === "line" ? gradientFill : `#${colors[0]}`,
           borderColor: `#${colors[0]}`,
           pointBackgroundColor: `#${colors[0]}`,
-          data: data.map((row) => row[measures[0]].value),
+          data: data.map((row) => row[measureName].value),
           yAxisID: "yLeft",
           fill,
         });
@@ -293,7 +297,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     tooltip: TooltipModel<"bar" | "line">;
   }
 
-  function externalTooltipHandler(
+  function tooltipHandler(
     context: TooltipContext,
     isYAxisCurrency: boolean,
     setTooltip: (newState: TooltipData | null) => void
@@ -306,34 +310,63 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     if (isTooltipVisible) {
       const position = context.chart.canvas.getBoundingClientRect();
 
-      // Period comparison
       const { dataIndex } = context.tooltip.dataPoints[0];
-      const pivotValue = context.tooltip.dataPoints[0].dataset.label;
-      const previousPeriodValue =
-        data[dataIndex][periodComparisonMeasure][pivotValue].value;
-      const currentPeriodValue = context.tooltip.dataPoints[0].raw as number;
 
-      const hasPreviousPeriod =
-        hasPeriodComparisonMeasure && !!previousPeriodValue;
-      const periodComparisonValue =
-        ((currentPeriodValue - previousPeriodValue) / previousPeriodValue) *
-        100;
+      const lookerRow = data[dataIndex];
+      let rows: TooltipRow[] = [];
+      if (showAllValuesInTooltip) {
+        Object.entries(lookerRow[measureName]).forEach(
+          ([pivotName, { value: currentPeriodValue }], i) => {
+            // Period comparison
+            const previousPeriodValue =
+              lookerRow[previousPeriodFieldName][pivotName].value;
+            const hasPreviousPeriod =
+              hasPeriodComparisonMeasure && !!previousPeriodValue;
+            const periodComparisonValue =
+              ((currentPeriodValue - previousPeriodValue) /
+                previousPeriodValue) *
+              100;
 
-      const rows = [
-        {
-          dimensionLabel: context.tooltip.title[0],
-          hasPreviousPeriod,
-          measureValue: `${isYAxisCurrency ? "$" : ""}${
-            context.tooltip.dataPoints[0].formattedValue
-          }`,
-          periodComparisonValue,
-          pivotColor: context.tooltip.dataPoints[0].dataset
-            .borderColor as string,
-          pivotText: context.tooltip.dataPoints[0].dataset.label,
-        },
-      ];
+            rows.push({
+              hasPreviousPeriod,
+              measureValue: `${
+                isYAxisCurrency ? "$" : ""
+              }${currentPeriodValue}`,
+              periodComparisonValue,
+              pivotColor: `#${colors[i]}`,
+              pivotText: pivotName,
+            });
+          }
+        );
+      } else {
+        // Period comparison
+        const pivotValue = context.tooltip.dataPoints[0].dataset.label;
+        const previousPeriodValue =
+          data[dataIndex][periodComparisonMeasure][pivotValue].value;
+        const currentPeriodValue = context.tooltip.dataPoints[0].raw as number;
+
+        const hasPreviousPeriod =
+          hasPeriodComparisonMeasure && !!previousPeriodValue;
+        const periodComparisonValue =
+          ((currentPeriodValue - previousPeriodValue) / previousPeriodValue) *
+          100;
+
+        rows = [
+          {
+            hasPreviousPeriod,
+            measureValue: `${isYAxisCurrency ? "$" : ""}${
+              context.tooltip.dataPoints[0].formattedValue
+            }`,
+            periodComparisonValue,
+            pivotColor: context.tooltip.dataPoints[0].dataset
+              .borderColor as string,
+            pivotText: context.tooltip.dataPoints[0].dataset.label,
+          },
+        ];
+      }
 
       setTooltip({
+        dimensionLabel: context.tooltip.title[0],
         left:
           position.left + window.pageXOffset + context.tooltip.caretX + "px",
         rows,
@@ -366,7 +399,7 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
         enabled: false,
         position: "nearest",
         external: (context) =>
-          externalTooltipHandler(context, isYAxisCurrency, setTooltip),
+          tooltipHandler(context, isYAxisCurrency, setTooltip),
       },
     },
     scales: {
@@ -403,14 +436,14 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   const kpiValue = data.reduce((total, currentRow) => {
     let newTotal = total;
     if (hasPivot) {
-      const cellValues = Object.values(currentRow[measures[0]]).map(
+      const cellValues = Object.values(currentRow[measureName]).map(
         (cell) => cell.value
       );
       for (let i = 0; i < cellValues.length; i++) {
         newTotal += cellValues[i];
       }
     } else {
-      newTotal += currentRow[measures[0]].value;
+      newTotal += currentRow[measureName].value;
     }
 
     return newTotal;
@@ -562,6 +595,12 @@ looker.plugins.visualizations.add({
         label: "Show Line Chart Gradient",
         default: false,
         order: 12,
+      },
+      showAllValuesInTooltip: {
+        type: "boolean",
+        label: "Show All Row Values in Tooltip",
+        default: false,
+        order: 13,
       },
     };
 

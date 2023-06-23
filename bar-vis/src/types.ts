@@ -1,7 +1,6 @@
 import { TooltipYAlignment } from "chart.js";
 
 export interface TooltipRow {
-  dimensionLabel: string;
   hasPreviousPeriod: boolean;
   measureValue: string;
   periodComparisonValue: number;
@@ -10,6 +9,7 @@ export interface TooltipRow {
 }
 
 export interface TooltipData {
+  dimensionLabel: string;
   left: string;
   rows: TooltipRow[];
   top: string;
