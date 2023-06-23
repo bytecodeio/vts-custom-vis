@@ -2,8 +2,10 @@ import { TooltipYAlignment } from "chart.js";
 
 export interface TooltipData {
   dimensionLabel: string;
+  hasPreviousPeriod: boolean;
   left: string;
   measureValue: string;
+  periodComparisonValue: number;
   pivotColor: string;
   pivotText: string;
   top: string;

@@ -1,4 +1,6 @@
 import React from "react";
+import { DownArrowSVG } from "./icons/DownArrowSVG";
+import { UpArrowSVG } from "./icons/UpArrowSVG";
 import { TooltipData } from "./types";
 
 interface TooltipProps {
@@ -9,8 +11,10 @@ interface TooltipProps {
 const Tooltip: React.FC<TooltipProps> = ({ hasPivot, tooltipData }) => {
   const {
     dimensionLabel,
+    hasPreviousPeriod,
     left,
     measureValue,
+    periodComparisonValue,
     pivotColor,
     pivotText,
     top,
@@ -19,8 +23,7 @@ const Tooltip: React.FC<TooltipProps> = ({ hasPivot, tooltipData }) => {
 
   return (
     <div
-      id="chartjs-tooltip"
-      className={`${yAlign ?? "no-transform"}`}
+      className={`chartjs-tooltip ${yAlign ?? "no-transform"}`}
       style={{ left, top }}
     >
       <div className="dimension-label">{dimensionLabel}</div>
@@ -31,6 +34,31 @@ const Tooltip: React.FC<TooltipProps> = ({ hasPivot, tooltipData }) => {
             style={{ backgroundColor: pivotColor }}
           ></div>
           <div className="pivot-text">{pivotText}</div>
+          {hasPreviousPeriod && (
+            <div
+              className={`period-comparison-wrapper ${
+                periodComparisonValue > 0
+                  ? "positive-background"
+                  : periodComparisonValue < 0
+                  ? "negative-background"
+                  : ""
+              }`}
+            >
+              {periodComparisonValue > 0 && <UpArrowSVG />}
+              {periodComparisonValue < 0 && <DownArrowSVG />}
+              <span
+                className={`comparison-value ${
+                  periodComparisonValue > 0
+                    ? "positive-text"
+                    : periodComparisonValue < 0
+                    ? "negative-text"
+                    : ""
+                }`}
+              >
+                {Math.abs(Math.round(periodComparisonValue)).toLocaleString()}%
+              </span>
+            </div>
+          )}
         </div>
       )}
       <div className="measure-value">{measureValue}</div>

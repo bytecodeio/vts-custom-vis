@@ -83,6 +83,7 @@ const chartPlugins = [
 ];
 
 function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
+  console.log("🚀 ~ file: customVis.tsx:86 ~ BarLineVis ~ data:", data);
   // Filters
   // const filterFieldMap = {
   //   marketRegion: "properties.market_or_region",
@@ -280,6 +281,9 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   // chart tooltip
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
 
+  const hasPeriodComparisonMeasure = fields.measures.length > 1;
+  const periodComparisonMeasure = fields.measures[1];
+
   interface TooltipContext {
     chart: ChartJS<
       keyof ChartTypeRegistry,
@@ -294,16 +298,36 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     isYAxisCurrency: boolean,
     setTooltip: (newState: TooltipData | null) => void
   ) {
+    console.log(
+      "🚀 ~ file: customVis.tsx:301 ~ BarLineVis ~ context:",
+      context
+    );
     const isTooltipVisible = context.tooltip.opacity !== 0;
     if (isTooltipVisible) {
       const position = context.chart.canvas.getBoundingClientRect();
+
+      // Period comparison
+      const { dataIndex } = context.tooltip.dataPoints[0];
+      const pivotValue = context.tooltip.dataPoints[0].dataset.label;
+      const previousPeriodValue =
+        data[dataIndex][periodComparisonMeasure][pivotValue].value;
+      const currentPeriodValue = context.tooltip.dataPoints[0].raw as number;
+
+      const hasPreviousPeriod =
+        hasPeriodComparisonMeasure && !!previousPeriodValue;
+      const periodComparisonValue =
+        ((currentPeriodValue - previousPeriodValue) / previousPeriodValue) *
+        100;
+
       setTooltip({
         dimensionLabel: context.tooltip.title[0],
+        hasPreviousPeriod,
         left:
           position.left + window.pageXOffset + context.tooltip.caretX + "px",
         measureValue: `${isYAxisCurrency ? "$" : ""}${
           context.tooltip.dataPoints[0].formattedValue
         }`,
+        periodComparisonValue,
         pivotColor: context.tooltip.dataPoints[0].dataset.borderColor as string,
         pivotText: context.tooltip.dataPoints[0].dataset.label,
         top:
@@ -452,6 +476,8 @@ looker.plugins.visualizations.add({
   // The updateAsync method gets called any time the visualization rerenders due to any kind of change,
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
+    console.log("🚀 ~ file: customVis.tsx:571 ~ queryResponse:", queryResponse);
+
     const lookerVis = this;
 
     // config
