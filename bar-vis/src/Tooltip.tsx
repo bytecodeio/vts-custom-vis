@@ -1,31 +1,25 @@
 import React from "react";
 import { DownArrowSVG } from "./icons/DownArrowSVG";
 import { UpArrowSVG } from "./icons/UpArrowSVG";
-import { TooltipData } from "./types";
+import { TooltipData, TooltipRow } from "./types";
 
-interface TooltipProps {
+interface TooltipRowProps {
   hasPivot: boolean;
-  tooltipData: TooltipData;
+  tooltipRow: TooltipRow;
 }
 
-const Tooltip: React.FC<TooltipProps> = ({ hasPivot, tooltipData }) => {
+const TooltipRow: React.FC<TooltipRowProps> = ({ hasPivot, tooltipRow }) => {
   const {
     dimensionLabel,
     hasPreviousPeriod,
-    left,
     measureValue,
     periodComparisonValue,
     pivotColor,
     pivotText,
-    top,
-    yAlign,
-  } = tooltipData;
+  } = tooltipRow;
 
   return (
-    <div
-      className={`chartjs-tooltip ${yAlign ?? "no-transform"}`}
-      style={{ left, top }}
-    >
+    <>
       <div className="dimension-label">{dimensionLabel}</div>
       {hasPivot && (
         <div className="pivot-label">
@@ -62,6 +56,26 @@ const Tooltip: React.FC<TooltipProps> = ({ hasPivot, tooltipData }) => {
         </div>
       )}
       <div className="measure-value">{measureValue}</div>
+    </>
+  );
+};
+
+interface TooltipProps {
+  hasPivot: boolean;
+  tooltipData: TooltipData;
+}
+
+const Tooltip: React.FC<TooltipProps> = ({ hasPivot, tooltipData }) => {
+  const { left, rows, top, yAlign } = tooltipData;
+
+  return (
+    <div
+      className={`chartjs-tooltip ${yAlign ?? "no-transform"}`}
+      style={{ left, top }}
+    >
+      {rows.map((tooltipRow) => (
+        <TooltipRow hasPivot={hasPivot} tooltipRow={tooltipRow} />
+      ))}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import "./style.scss";
-import { Looker, TooltipData, VisConfig, VisData } from "./types";
+import { Looker, TooltipData, TooltipRow, VisConfig, VisData } from "./types";
 import { createRoot } from "react-dom/client";
 import React, { useEffect, useState } from "react";
 import { formatNumber } from "./utils";
@@ -319,17 +319,24 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
         ((currentPeriodValue - previousPeriodValue) / previousPeriodValue) *
         100;
 
+      const rows = [
+        {
+          dimensionLabel: context.tooltip.title[0],
+          hasPreviousPeriod,
+          measureValue: `${isYAxisCurrency ? "$" : ""}${
+            context.tooltip.dataPoints[0].formattedValue
+          }`,
+          periodComparisonValue,
+          pivotColor: context.tooltip.dataPoints[0].dataset
+            .borderColor as string,
+          pivotText: context.tooltip.dataPoints[0].dataset.label,
+        },
+      ];
+
       setTooltip({
-        dimensionLabel: context.tooltip.title[0],
-        hasPreviousPeriod,
         left:
           position.left + window.pageXOffset + context.tooltip.caretX + "px",
-        measureValue: `${isYAxisCurrency ? "$" : ""}${
-          context.tooltip.dataPoints[0].formattedValue
-        }`,
-        periodComparisonValue,
-        pivotColor: context.tooltip.dataPoints[0].dataset.borderColor as string,
-        pivotText: context.tooltip.dataPoints[0].dataset.label,
+        rows,
         top:
           position.top +
           window.pageYOffset +

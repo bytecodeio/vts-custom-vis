@@ -1,13 +1,17 @@
 import { TooltipYAlignment } from "chart.js";
 
-export interface TooltipData {
+export interface TooltipRow {
   dimensionLabel: string;
   hasPreviousPeriod: boolean;
-  left: string;
   measureValue: string;
   periodComparisonValue: number;
   pivotColor: string;
   pivotText: string;
+}
+
+export interface TooltipData {
+  left: string;
+  rows: TooltipRow[];
   top: string;
   yAlign: TooltipYAlignment;
 }
