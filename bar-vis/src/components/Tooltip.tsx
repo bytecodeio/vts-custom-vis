@@ -82,6 +82,7 @@ const Tooltip: React.FC<TooltipProps> = ({ hasPivot, tooltipData }) => {
       {rows.map((tooltipRow, i) => (
         <TooltipRow
           hasPivot={hasPivot}
+          key={tooltipRow.pivotColor}
           style={{ marginTop: i > 0 ? "8px" : "3px" }}
           tooltipRow={tooltipRow}
         />

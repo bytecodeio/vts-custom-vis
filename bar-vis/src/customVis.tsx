@@ -2,11 +2,12 @@ import "./style.scss";
 import { createRoot } from "react-dom/client";
 import React from "react";
 import "bootstrap/scss/bootstrap.scss";
-import { Fields, Looker } from "./types";
+import { Fields, Looker, LookerChartUtils } from "./types";
 import BarLineVis from "./components/BarLineVis";
 
-// Global values provided via the API
+// Global values provided via the Looker custom visualization API
 declare var looker: Looker;
+declare var LookerCharts: LookerChartUtils;
 
 interface ConfigOptions {
   [key: string]: {
@@ -23,8 +24,6 @@ looker.plugins.visualizations.add({
   // The updateAsync method gets called any time the visualization rerenders due to any kind of change,
   // such as updated data, configuration options, etc.
   updateAsync: function (data, element, config, queryResponse, details, done) {
-    console.log("🚀 ~ file: customVis.tsx:571 ~ queryResponse:", queryResponse);
-
     const lookerVis = this;
 
     // config
@@ -139,7 +138,7 @@ looker.plugins.visualizations.add({
         data={data}
         fields={fields}
         config={validatedConfig}
-        lookerVis={lookerVis}
+        lookerCharts={LookerCharts}
       />
     );
 

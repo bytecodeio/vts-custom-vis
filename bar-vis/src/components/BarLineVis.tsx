@@ -1,5 +1,13 @@
-import { Fields, TooltipData, TooltipRow, VisConfig, VisData } from "../types";
-import React, { useEffect, useState } from "react";
+import {
+  Fields,
+  Link,
+  LookerChartUtils,
+  TooltipData,
+  TooltipRow,
+  VisConfig,
+  VisData,
+} from "../types";
+import React, { useEffect, useMemo, useState } from "react";
 import { formatNumber } from "../utils";
 import {
   Chart as ChartJS,
@@ -44,6 +52,7 @@ interface BarLineVisProps {
   data: VisData;
   fields: Fields;
   config: VisConfig;
+  lookerCharts: LookerChartUtils;
   lookerVis?: any;
 }
 
@@ -64,8 +73,13 @@ const chartPlugins = [
   },
 ];
 
-function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
-  console.log("🚀 ~ file: customVis.tsx:86 ~ BarLineVis ~ data:", data);
+function BarLineVis({
+  data,
+  fields,
+  config,
+  lookerCharts,
+}: BarLineVisProps): JSX.Element {
+  console.log("🚀 ~ file: BarLineVis.tsx:81 ~ data:", data);
   // Filters
   // const filterFieldMap = {
   //   marketRegion: "properties.market_or_region",
@@ -284,10 +298,6 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
     isYAxisCurrency: boolean,
     setTooltip: (newState: TooltipData | null) => void
   ) {
-    console.log(
-      "🚀 ~ file: customVis.tsx:301 ~ BarLineVis ~ context:",
-      context
-    );
     const isTooltipVisible = context.tooltip.opacity !== 0;
     if (isTooltipVisible) {
       const position = context.chart.canvas.getBoundingClientRect();
@@ -366,53 +376,77 @@ function BarLineVis({ data, fields, config }: BarLineVisProps): JSX.Element {
   }
 
   // chart options
-  const chartOptions: ChartOptions<"bar" | "line"> = {
-    layout: {
-      padding: {
-        top: 5,
-      },
-    },
-    plugins: {
-      legend: {
-        align: "start" as const,
-        display: hasPivot,
-      },
-      tooltip: {
-        enabled: false,
-        position: "nearest",
-        external: (context) =>
-          tooltipHandler(context, isYAxisCurrency, setTooltip),
-      },
-    },
-    scales: {
-      x: {
-        grid: {
-          display: showXGridLines,
-        },
-        stacked: isStacked,
-        title: {
-          display: showXAxisLabel,
-          text: xAxisText,
+  const chartOptions: ChartOptions<"bar" | "line"> = useMemo(
+    () => ({
+      layout: {
+        padding: {
+          top: 5,
         },
       },
-      yLeft: {
-        grid: {
-          display: showYGridLines,
+      onClick: (event, elements, chart) => {
+        console.log("event", event);
+        console.log("elements", elements);
+        console.log("chart", chart);
+
+        if (!elements.length) {
+          return;
+        }
+
+        const { datasetIndex, index: dataIndex } = elements[0];
+
+        const measureLinks =
+          Object.values(data[dataIndex][measureName])[datasetIndex].links ?? [];
+        const dimensionLinks =
+          (data[dataIndex][dimensionName].links as Link[]) ?? [];
+
+        lookerCharts.Utils.openDrillMenu({
+          links: [...measureLinks, ...dimensionLinks],
+          event: event.native,
+        });
+      },
+      plugins: {
+        legend: {
+          align: "start" as const,
+          display: hasPivot,
         },
-        position: "left" as const,
-        stacked: isStacked,
-        ticks: {
-          callback: function (value: number) {
-            return `${isYAxisCurrency ? "$" : ""}${formatNumber(value)}`;
+        tooltip: {
+          enabled: false,
+          position: "nearest",
+          external: (context) =>
+            tooltipHandler(context, isYAxisCurrency, setTooltip),
+        },
+      },
+      scales: {
+        x: {
+          grid: {
+            display: showXGridLines,
+          },
+          stacked: isStacked,
+          title: {
+            display: showXAxisLabel,
+            text: xAxisText,
           },
         },
-        title: {
-          display: showYAxisLabel,
-          text: yAxisText,
+        yLeft: {
+          grid: {
+            display: showYGridLines,
+          },
+          position: "left" as const,
+          stacked: isStacked,
+          ticks: {
+            callback: function (value: number) {
+              return `${isYAxisCurrency ? "$" : ""}${formatNumber(value)}`;
+            },
+          },
+          title: {
+            display: showYAxisLabel,
+            text: yAxisText,
+          },
         },
       },
-    },
-  };
+    }),
+    []
+  );
 
   // KPI value
   const kpiValue = data.reduce((total, currentRow) => {
