@@ -1,5 +1,11 @@
 import { TooltipYAlignment } from "chart.js";
 
+export interface Fields {
+  dimensions: string[];
+  measures: string[];
+  pivots: string[];
+}
+
 export interface TooltipRow {
   hasPreviousPeriod: boolean;
   measureValue: string;

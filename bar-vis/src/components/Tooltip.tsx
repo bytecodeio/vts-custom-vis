@@ -1,7 +1,7 @@
 import React from "react";
-import { DownArrowSVG } from "./icons/DownArrowSVG";
-import { UpArrowSVG } from "./icons/UpArrowSVG";
-import { TooltipData, TooltipRow } from "./types";
+import { DownArrowSVG } from "../icons/DownArrowSVG";
+import { UpArrowSVG } from "../icons/UpArrowSVG";
+import { TooltipData, TooltipRow } from "../types";
 
 interface TooltipRowProps {
   hasPivot: boolean;
