@@ -7,22 +7,34 @@ import { CustomTable } from "./CustomTable";
 looker.plugins.visualizations.add({
   options: {
 
-    thColor: {
-      type: "string",
-      label: "<th> Color",
-      default: "#666666",
-      display: "text",
-      placeholder: "#666666",
-      section: "Title",
-    },
-    thFontSize: {
-      type: "string",
-      label: "Title Font Size",
-      default: "16px",
-      display: "text",
-      placeholder: "16px",
-      section: "Title",
-    },
+  tableBordered: {
+   type: "boolean",
+   label: "Bordered Table",
+   default: false,
+   order: 1,
+ },
+ fixedHeight: {
+  type: "boolean",
+  label: "Table Scroll",
+  default: false,
+  order: 2,
+},
+unsetTable: {
+ type: "boolean",
+ label: "Table Layout",
+ default: false,
+ order: 3,
+},
+
+bottomRight: {
+ type: "boolean",
+ label: "Bottom Right Pagination",
+ default: false,
+ order: 4,
+},
+
+
+
 
   },
 
