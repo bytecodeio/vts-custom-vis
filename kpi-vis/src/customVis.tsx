@@ -243,7 +243,9 @@ looker.plugins.visualizations.add({
     comparisonField = comparisonField ?? comparisonFieldDefault;
     gaugeField = gaugeField ?? gaugeFieldDefault;
 
-    const kpiValue = data[0][kpiField].rendered as string;
+    const kpiValue =
+      (data[0][kpiField].rendered as string) ??
+      data[0][kpiField].value.toString();
 
     let comparisonValue = "";
     let comparisonValueRaw;
